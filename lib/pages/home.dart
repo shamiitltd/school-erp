@@ -4,7 +4,8 @@ import 'package:school_erp/pages/chat.dart';
 import 'package:school_erp/pages/fee.dart';
 import 'package:school_erp/pages/profile.dart';
 import 'package:school_erp/pages/trackbus.dart';
-import 'package:school_erp/static/constants.dart';
+import 'package:school_erp/shared/constants.dart';
+
 
 class MyHomePage extends StatefulWidget {
   const MyHomePage({super.key, required this.title});
@@ -43,7 +44,7 @@ class _MyHomePageState extends State<MyHomePage> {
     } else if (currentPage == DrawerSections.chat ) {
       container = ChatActivity();
     } else if (currentPage == DrawerSections.trackbus ) {
-      container = TrackBusActivity();
+      container = BusTrackingPage();
     } else if (currentPage == DrawerSections.fee) {
       container = FeeActivity();
     } else if (currentPage == DrawerSections.settings) {

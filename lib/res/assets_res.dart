@@ -5,5 +5,7 @@
 class AssetsRes {
   static const String PLUGIN_NAME = 'school_erp';
   static const String PLUGIN_VERSION = '1.0.0+1';
+  static const String BUS = 'assets/bus.png';
+  static const String PERSON = 'assets/person.png';
   static const String SHAMIITLOGO = 'assets/shamiitlogo.jpg';
 }
