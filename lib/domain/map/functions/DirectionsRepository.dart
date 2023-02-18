@@ -1,16 +1,14 @@
 import 'package:dio/dio.dart';
 import 'package:flutter_polyline_points/flutter_polyline_points.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
-import 'package:school_erp/models/directions.dart';
-import 'package:school_erp/shared/constants.dart';
-
+import 'package:school_erp/config/StaticConstants.dart';
+import 'package:school_erp/domain/map/models/Directions.dart';
 
 class DirectionsRepository {
   static const String _baseUrl =
       'https://maps.googleapis.com/maps/api/directions/json?';
 
   final Dio _dio;
-
   DirectionsRepository() : _dio = Dio();
 
   Future<Directions> getDirections({

@@ -1,0 +1,40 @@
+{
+  "project_info": {
+    "project_number": "35032464117",
+    "firebase_url": "https://school-erp-1-default-rtdb.firebaseio.com",
+    "project_id": "school-erp-1",
+    "storage_bucket": "school-erp-1.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:35032464117:android:e7f0d1d232d8eb9f07a3bc",
+        "android_client_info": {
+          "package_name": "com.shamiit.school_erp"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "35032464117-cn3lb2dn77rler8v0vacaqgm8o3vccpg.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCk83g9mSbgFnbb6-rTHTjqxabRayLyHc4"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "35032464117-cn3lb2dn77rler8v0vacaqgm8o3vccpg.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

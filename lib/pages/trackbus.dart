@@ -5,9 +5,11 @@ import 'package:flutter/material.dart';
 import 'package:flutter_polyline_points/flutter_polyline_points.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:location/location.dart';
-import 'package:school_erp/models/directions.dart';
-import 'package:school_erp/shared/constants.dart';
-import 'package:school_erp/shared/directions_repository.dart';
+import 'package:school_erp/config/DynamicConstants.dart';
+import 'package:school_erp/config/StaticConstants.dart';
+import 'package:school_erp/domain/map/functions/DirectionsRepository.dart';
+import 'package:school_erp/domain/map/models/Directions.dart';
+import 'package:school_erp/res/assets_res.dart';
 
 class BusTrackingPage extends StatefulWidget {
   const BusTrackingPage({Key? key}) : super(key: key);
@@ -90,15 +92,15 @@ class BusTrackingPageState extends State<BusTrackingPage> {
   }
 
   void setCustomMarkerIcon(){
-    BitmapDescriptor.fromAssetImage(ImageConfiguration.empty, "assets/person.png").then((value)
+    BitmapDescriptor.fromAssetImage(ImageConfiguration.empty, AssetsRes.PERSON).then((value)
     {
       sourceIcon = value;
     });
-    BitmapDescriptor.fromAssetImage(ImageConfiguration.empty, "assets/person.png").then((value)
+    BitmapDescriptor.fromAssetImage(ImageConfiguration.empty, AssetsRes.PERSON).then((value)
     {
       destinationIcon = value;
     });
-    BitmapDescriptor.fromAssetImage(ImageConfiguration.empty, "assets/bus.png").then((value)
+    BitmapDescriptor.fromAssetImage(ImageConfiguration.empty, AssetsRes.BUS).then((value)
     {
       currentLocationIcon = value;
     });
@@ -107,7 +109,8 @@ class BusTrackingPageState extends State<BusTrackingPage> {
   void initState() {
     // TODO: implement initState
     super.initState();
-    WidgetsFlutterBinding.ensureInitialized();
+    // WidgetsFlutterBinding.ensureInitialized();
+
     getCurrentLocation();
     setCustomMarkerIcon();
     // getPolyPoints();

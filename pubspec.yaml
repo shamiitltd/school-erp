@@ -32,15 +32,24 @@ dependencies:
   flutter:
     sdk: flutter
 
-
-  # The following adds the Cupertino Icons font to your application.
-  # Use with the CupertinoIcons class for iOS style icons.
   cupertino_icons: ^1.0.2
+  firebase_core: ^2.4.1
+  firebase_database: ^10.0.9
+  firebase_auth: ^4.2.5
   flutter_polyline_points: ^1.0.0
   google_maps_flutter: ^2.2.3
   location: ^4.4.0
-  flutter_svg: ^1.1.6
-  dio: ^4.0.6
+  latlong2: ^0.8.1
+  flutter_svg: 2.0.1
+  dio: 5.0.0
+  email_validator: ^2.1.17
+  http: ^0.13.5
+  url_launcher: ^6.1.9
+  shared_preferences: ^2.0.17
+  lite_rolling_switch: ^1.0.0
+  flutter_compass: ^0.7.0
+  motion_sensors: ^0.1.0
+
 
 dev_dependencies:
   flutter_test:
@@ -95,6 +104,16 @@ flutter:
   # For details regarding fonts from package dependencies,
   # see https://flutter.dev/custom-fonts/#from-packages
   assets:
-    - assets/bus.png
-    - assets/person.png
-    - assets/shamiitlogo.jpg
+    - assets/icons/bus.png
+    - assets/icons/busoff.png
+    - assets/icons/busofftop.png
+    - assets/icons/bustop.png
+    - assets/icons/focus.png
+    - assets/icons/invisible.png
+    - assets/icons/notfocus.png
+    - assets/icons/person.png
+    - assets/icons/personoff.png
+    - assets/icons/visible.png
+    - assets/images/login.png
+    - assets/images/register.png
+    - assets/shamiitlogo.png

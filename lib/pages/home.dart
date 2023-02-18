@@ -1,10 +1,13 @@
 import 'package:flutter/material.dart';
+import 'package:school_erp/config/Colors.dart';
+import 'package:school_erp/config/DynamicConstants.dart';
+import 'package:school_erp/domain/map/MapHome.dart';
 import 'package:school_erp/pages/dashboard.dart';
 import 'package:school_erp/pages/chat.dart';
 import 'package:school_erp/pages/fee.dart';
 import 'package:school_erp/pages/profile.dart';
 import 'package:school_erp/pages/trackbus.dart';
-import 'package:school_erp/shared/constants.dart';
+import 'package:school_erp/res/assets_res.dart';
 
 
 class MyHomePage extends StatefulWidget {
@@ -44,7 +47,7 @@ class _MyHomePageState extends State<MyHomePage> {
     } else if (currentPage == DrawerSections.chat ) {
       container = ChatActivity();
     } else if (currentPage == DrawerSections.trackbus ) {
-      container = BusTrackingPage();
+      container = MapHomePage();
     } else if (currentPage == DrawerSections.fee) {
       container = FeeActivity();
     } else if (currentPage == DrawerSections.settings) {
@@ -214,10 +217,10 @@ class _MyHomePageState extends State<MyHomePage> {
               Container(
                 margin: EdgeInsets.only(bottom: 10),
                 height: 70,
-                decoration: BoxDecoration(
+                decoration: const BoxDecoration(
                   shape: BoxShape.circle,
                   image: DecorationImage(
-                    image: AssetImage('assets/shamiitlogo.jpg'),
+                    image: AssetImage(AssetsRes.SHAMIITLOGO),
                   ),
                 ),
               ),
