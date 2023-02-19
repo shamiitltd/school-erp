@@ -134,13 +134,16 @@ class _LoginWidgetState extends State<LoginWidget> {
     showDialog(
         context: context,
         barrierDismissible: false,
-        builder: (context)=> const Center(child: CircularProgressIndicator())
+        builder: (context){
+         return const Center(child: CircularProgressIndicator());
+        }
     );
     try{
       await FirebaseAuth.instance.signInWithEmailAndPassword(
           email: emailController.text.trim(),
           password: passwordController.text.trim()
       ).then((_) {
+        Navigator.of(context).pop();
         Navigator.of(context).popUntil((route) => route.isFirst);
       }).catchError((error) {
         PopupSnackBar.showSnackBar(error);

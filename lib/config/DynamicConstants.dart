@@ -11,6 +11,7 @@ bool floatingMini = true;
 double zoomMap = 15.5; //when you increase the value it will zoom the map
 bool iconVisible = true;
 int delayRecording = 10;//in seconds
+int speed = 0;
 
 double bearingMap = 0;
 double tiltMap = 56.440717697143555;
@@ -31,5 +32,5 @@ enum DrawerSections {
   notifications,
   send_feedback,
   profile,
-  dummy
+  dummy, logout
 }

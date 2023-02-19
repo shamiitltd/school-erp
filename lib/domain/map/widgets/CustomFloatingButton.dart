@@ -4,10 +4,10 @@ import 'package:school_erp/config/StaticConstants.dart';
 import 'package:school_erp/domain/map/functions/Computational.dart';
 import 'package:school_erp/domain/map/functions/RealTimeDb.dart';
 
-
 class CustomFloatingButton extends StatefulWidget {
   final String selectedUid;
-  const CustomFloatingButton({Key? key, required this.selectedUid}) : super(key: key);
+  const CustomFloatingButton({Key? key, required this.selectedUid})
+      : super(key: key);
 
   @override
   State<CustomFloatingButton> createState() => _CustomFloatingButtonState();
@@ -40,8 +40,7 @@ class _CustomFloatingButtonState extends State<CustomFloatingButton> {
         children: [
           if (isSettingOpen)
             Padding(
-              padding:
-                  const EdgeInsets.only(top: 150),
+              padding: const EdgeInsets.only(top: 150),
               child: Row(
                 children: [
                   Container(
@@ -84,18 +83,57 @@ class _CustomFloatingButtonState extends State<CustomFloatingButton> {
             children: [
               Expanded(
                 child: Row(
+                  mainAxisAlignment: MainAxisAlignment.start,
+                  crossAxisAlignment: CrossAxisAlignment.end,
                   children: [
-                    FloatingActionButton(
-                      mini: floatingMini,
-                      onPressed: () {
-                        focusMe = !focusMe;
-                        focusDest = false;
-                        setState(() {});
-                      },
-                      tooltip: 'Focus Me',
-                      child: focusMe
-                          ? const Icon(Icons.center_focus_strong)
-                          : const ImageIcon(AssetImage(noFocusIcon)),
+                    Column(
+                      children: [
+                        Container(
+                          padding: const EdgeInsets.symmetric(
+                            vertical: 6.0,
+                            horizontal: 6.0,
+                          ),
+                          decoration: BoxDecoration(
+                            color: Colors.blueAccent,
+                            borderRadius: BorderRadius.circular(50.0),
+                            boxShadow: const [
+                              BoxShadow(
+                                color: Colors.black26,
+                                offset: Offset(0, 2),
+                                blurRadius: 6.0,
+                              )
+                            ],
+                          ),
+                          child: Column(
+                            children: [
+                              Center(
+                                child: Text('$speed',
+                                    style: TextStyle(
+                                        color: Colors.white,
+                                        fontWeight: FontWeight.bold,
+                                        fontSize: speedFont + 5)),
+                              ),
+                              Text('Km/h',
+                                  style: TextStyle(
+                                      color: Colors.white,
+                                      fontWeight: FontWeight.bold,
+                                      fontSize: speedFont)),
+                            ],
+                          ),
+                        ),
+                        FloatingActionButton(
+                          mini: floatingMini,
+                          onPressed: () {
+                            focusMe = !focusMe;
+                            focusDest = false;
+                            setState(() {});
+                          },
+                          tooltip: 'Focus Me',
+                          child: focusMe
+                              ? const Icon(Icons.center_focus_strong)
+                              : const ImageIcon(AssetImage(noFocusIcon)),
+                        ),
+                      ],
                     ),
                     if (selectedUid.isNotEmpty) const SizedBox(width: 8),
                     if (selectedUid.isNotEmpty)

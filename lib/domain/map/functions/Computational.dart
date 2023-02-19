@@ -1,4 +1,5 @@
 
+import 'package:location/location.dart';
 import 'package:school_erp/domain/map/functions/RealTimeDb.dart';
 import 'package:school_erp/shared/functions/Computational.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -41,4 +42,30 @@ bool compareLatLang(LatLng coordinate1, LatLng coordinate2, int precision) {
       setPrecision(coordinate2.longitude, precision) &&
       setPrecision(coordinate1.latitude, precision) ==
           setPrecision(coordinate2.latitude, precision));
+}
+
+Future<bool> locationPermission() async {
+  Location location = new Location();
+
+  bool _serviceEnabled;
+  PermissionStatus _permissionGranted;
+  LocationData _locationData;
+  _serviceEnabled = await location.serviceEnabled();
+  if (!_serviceEnabled) {
+    _serviceEnabled = await location.requestService();
+    if (!_serviceEnabled) {
+      return false;
+    }
+  }
+
+  _permissionGranted = await location.hasPermission();
+  if (_permissionGranted == PermissionStatus.denied) {
+    _permissionGranted = await location.requestPermission();
+    if (_permissionGranted != PermissionStatus.granted) {
+      return false;
+    }
+  }
+  _locationData = await location.getLocation();
+  await location.enableBackgroundMode(enable: true);
+  return true;
 }

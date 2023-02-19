@@ -7,6 +7,7 @@ const Color primaryColor = Color(0xF44336FF);
 bool isEmailVerified = false;
 bool focusLiveLocation = true;
 const double defaultPadding = 16.0;
+double speedFont = 15.0;
 
 const String busIconAsset = AssetsRes.BUS;
 const String busOffIconAsset = AssetsRes.BUSOFF;

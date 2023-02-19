@@ -376,6 +376,7 @@ class _RegisterUserState extends State<RegisterUser> {
           .registerUserForGoogleMap(selectedYourPost, phoneNumber, email,
               displayName, selectedYourRoute, routeAccess, true)
           .then((_) {
+        Navigator.of(context).pop();
         Navigator.of(context).popUntil((route) => route.isFirst);
       }).catchError((error) {
         PopupSnackBar.showSnackBar(error);

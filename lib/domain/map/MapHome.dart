@@ -186,6 +186,7 @@ class MapHomePageState extends State<MapHomePage> {
     googleMapController = await _controller.future;
     location.onLocationChanged.listen((newlocation) async {
       currentLocationData = newlocation;
+      speed = (currentLocationData?.speed??0*3.6).toInt();
       MapFirebase().setMyCoordinates(currentLocationData!.latitude!.toString(),
           currentLocationData!.longitude!.toString(), bearingMap);
       myLocation = LatLng(

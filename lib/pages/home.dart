@@ -1,14 +1,15 @@
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:school_erp/config/Colors.dart';
 import 'package:school_erp/config/DynamicConstants.dart';
 import 'package:school_erp/domain/map/MapHome.dart';
+import 'package:school_erp/domain/map/functions/Computational.dart';
 import 'package:school_erp/pages/dashboard.dart';
 import 'package:school_erp/pages/chat.dart';
 import 'package:school_erp/pages/fee.dart';
 import 'package:school_erp/pages/profile.dart';
 import 'package:school_erp/pages/trackbus.dart';
 import 'package:school_erp/res/assets_res.dart';
-
 
 class MyHomePage extends StatefulWidget {
   const MyHomePage({super.key, required this.title});
@@ -19,9 +20,16 @@ class MyHomePage extends StatefulWidget {
 }
 
 class _MyHomePageState extends State<MyHomePage> {
+  final user = FirebaseAuth.instance.currentUser;
   int _selectedIndex = 0;
   var currentPage = DrawerSections.dashboard;
-  int sepflag = 0;//serperate both drawer and bottom nav
+  int sepflag = 0; //serperate both drawer and bottom nav
+
+  @override
+  void initState() {
+    super.initState();
+    locationPermission();
+  }
 
   void _onItemTapped(int index) {
     setState(() {
@@ -33,7 +41,7 @@ class _MyHomePageState extends State<MyHomePage> {
         currentPage = DrawerSections.chat;
       } else if (index == 2) {
         currentPage = DrawerSections.trackbus;
-      }else if (index == 3) {
+      } else if (index == 3) {
         currentPage = DrawerSections.profile;
       }
     });
@@ -42,11 +50,11 @@ class _MyHomePageState extends State<MyHomePage> {
   @override
   Widget build(BuildContext context) {
     var container;
-    if (currentPage == DrawerSections.dashboard ) {
+    if (currentPage == DrawerSections.dashboard) {
       container = Dashboard();
-    } else if (currentPage == DrawerSections.chat ) {
+    } else if (currentPage == DrawerSections.chat) {
       container = ChatActivity();
-    } else if (currentPage == DrawerSections.trackbus ) {
+    } else if (currentPage == DrawerSections.trackbus) {
       container = MapHomePage();
     } else if (currentPage == DrawerSections.fee) {
       container = FeeActivity();
@@ -54,31 +62,31 @@ class _MyHomePageState extends State<MyHomePage> {
       container = ProfileActivity();
     } else if (currentPage == DrawerSections.notifications) {
       container = FeeActivity();
-    }else if (currentPage == DrawerSections.send_feedback) {
+    } else if (currentPage == DrawerSections.send_feedback) {
       container = FeeActivity();
-    }else if (currentPage == DrawerSections.profile) {
+    } else if (currentPage == DrawerSections.profile) {
       container = ProfileActivity();
+    }else if (currentPage == DrawerSections.logout) {
+      FirebaseAuth.instance.signOut();
     }
 
     return Scaffold(
-      appBar: AppBar(
-        // leading: Icon(Icons.menu),
-        title: Text(widget.title),
-      ),
-      drawer: Drawer(
-        child: SingleChildScrollView(
-          child: Column(
-          mainAxisAlignment: MainAxisAlignment.start,
-          children: <Widget>[
-            MyHeaderDrawer(),
-            MyDrawerList()
-          ],
+        appBar: AppBar(
+          // leading: Icon(Icons.menu),
+          title: Text(widget.title),
         ),
+        drawer: Drawer(
+          child: SingleChildScrollView(
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.start,
+              children: <Widget>[MyHeaderDrawer(), MyDrawerList()],
+            ),
+          ),
         ),
-      ),
-      body: container,
-      bottomNavigationBar: BottomNavBar() // This trailing comma makes auto-formatting nicer for build methods.
-    );
+        body: container,
+        bottomNavigationBar:
+            BottomNavBar() // This trailing comma makes auto-formatting nicer for build methods.
+        );
   }
 
   Widget MyDrawerList() {
@@ -102,6 +110,9 @@ class _MyHomePageState extends State<MyHomePage> {
           Divider(),
           menuItem(7, "Send feedback", Icons.feedback_outlined,
               currentPage == DrawerSections.send_feedback ? true : false),
+          Divider(),
+          menuItem(8, "Logout", Icons.logout,
+              currentPage == DrawerSections.logout ? true : false),
         ],
       ),
     );
@@ -114,11 +125,11 @@ class _MyHomePageState extends State<MyHomePage> {
         onTap: () {
           Navigator.pop(context);
           setState(() {
-            if(id > navlen){
-              _selectedIndex=0;
+            if (id > navlen) {
+              _selectedIndex = 0;
               sepflag = 1;
-            } else{
-              _selectedIndex = id-1;
+            } else {
+              _selectedIndex = id - 1;
               sepflag = 0;
             }
             if (id == 1) {
@@ -135,6 +146,8 @@ class _MyHomePageState extends State<MyHomePage> {
               currentPage = DrawerSections.notifications;
             } else if (id == 7) {
               currentPage = DrawerSections.send_feedback;
+            }else if (id == 8) {
+              currentPage = DrawerSections.logout;
             }
           });
         },
@@ -166,40 +179,42 @@ class _MyHomePageState extends State<MyHomePage> {
     );
   }
 
-  Widget BottomNavBar(){
+  Widget BottomNavBar() {
     return BottomNavigationBar(
       items: <BottomNavigationBarItem>[
         BottomNavigationBarItem(
-          icon:const Icon(Icons.home),
+          icon: const Icon(Icons.home),
           label: 'Home',
           backgroundColor: Colors.indigo[bnBarColor],
         ),
         BottomNavigationBarItem(
-          icon:const Icon(Icons.chat),
+          icon: const Icon(Icons.chat),
           label: 'Chat',
           backgroundColor: Colors.brown[bnBarColor],
         ),
         BottomNavigationBarItem(
-          icon:const Icon(Icons.bus_alert),
+          icon: const Icon(Icons.bus_alert),
           label: 'Track Bus',
           backgroundColor: Colors.green[bnBarColor],
         ),
         BottomNavigationBarItem(
-          icon:const Icon(Icons.person_outline_outlined),
+          icon: const Icon(Icons.person_outline_outlined),
           label: 'Profile',
           backgroundColor: Colors.purple[bnBarColor],
         ),
       ],
       currentIndex: _selectedIndex,
-      selectedItemColor: sepflag ==0? Colors.deepOrange[deepColor]:Colors.white,
+      selectedItemColor:
+          sepflag == 0 ? Colors.deepOrange[deepColor] : Colors.white,
       onTap: _onItemTapped,
     );
   }
-  Widget MyHeaderDrawer(){
+
+  Widget MyHeaderDrawer() {
     return Material(
       color: Colors.green[700],
       child: InkWell(
-        onTap: (){
+        onTap: () {
           Navigator.pop(context);
           setState(() {
             sepflag = 0;
@@ -225,11 +240,11 @@ class _MyHomePageState extends State<MyHomePage> {
                 ),
               ),
               Text(
-                "SHAMIIT LIMITED",
+                '${user?.displayName}',
                 style: TextStyle(color: Colors.white, fontSize: 20),
               ),
               Text(
-                "info@shamiit.com",
+                "${user?.email}",
                 style: TextStyle(
                   color: Colors.grey[200],
                   fontSize: 14,
