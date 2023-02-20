@@ -1,5 +1,6 @@
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
+import 'package:school_erp/config/Colors.dart';
 import 'package:school_erp/domain/authentication/LoginActivity.dart';
 import 'package:school_erp/shared/functions/popupSnakbar.dart';
 
@@ -34,7 +35,7 @@ class MyApp extends StatelessWidget {
       title: 'School ERP by SHAMIIT',
       debugShowCheckedModeBanner: false,
       theme: ThemeData(
-        primarySwatch: Colors.blue,
+        primarySwatch: themeColor,
         appBarTheme: const AppBarTheme(
           // backgroundColor: Colors.white,
           elevation: 0,

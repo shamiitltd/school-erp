@@ -10,6 +10,7 @@ import 'package:latlong2/latlong.dart' as latlonglib;
 import 'package:lite_rolling_switch/lite_rolling_switch.dart';
 import 'package:location/location.dart';
 import 'package:http/http.dart' as http;
+import 'package:school_erp/config/Colors.dart';
 import 'package:school_erp/config/DynamicConstants.dart';
 import 'package:school_erp/config/StaticConstants.dart';
 import 'package:school_erp/domain/map/functions/Computational.dart';
@@ -376,6 +377,7 @@ class MapHomePageState extends State<MapHomePage> {
 
     return Scaffold(
       appBar: AppBar(
+        backgroundColor: mapNavColor,
         title: Row(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
@@ -401,7 +403,7 @@ class MapHomePageState extends State<MapHomePage> {
                           onChanged: (value) async {
                             _selectedRoute = value ?? '';
                             await MapFirebase().setRoute(_selectedRoute);
-                            Navigator.of(context)
+                            Navigator.of(context, rootNavigator: true)
                                 .pushReplacement(MaterialPageRoute(
                               builder: (context) => const MapHomePage(),
                             ));

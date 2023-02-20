@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:school_erp/config/Colors.dart';
 import 'package:school_erp/config/DynamicConstants.dart';
 import 'package:school_erp/config/StaticConstants.dart';
 import 'package:school_erp/domain/map/functions/Computational.dart';
@@ -49,7 +50,7 @@ class _CustomFloatingButtonState extends State<CustomFloatingButton> {
                       horizontal: 12.0,
                     ),
                     decoration: BoxDecoration(
-                      color: Colors.blueAccent,
+                      color: mapFloatingColor,
                       borderRadius: BorderRadius.circular(20.0),
                       boxShadow: const [
                         BoxShadow(
@@ -64,7 +65,9 @@ class _CustomFloatingButtonState extends State<CustomFloatingButton> {
                             color: Colors.white, fontSize: 20.0)),
                   ),
                   Slider(
-                    thumbColor: Colors.red,
+                    activeColor: mapSliderActiveColor,
+                    inactiveColor: mapSliderInActiveColor,
+                    thumbColor: mapSliderThumbColor,
                     label: "Zoom Map",
                     value: zoomMap,
                     onChanged: (value) {
@@ -94,7 +97,7 @@ class _CustomFloatingButtonState extends State<CustomFloatingButton> {
                             horizontal: 6.0,
                           ),
                           decoration: BoxDecoration(
-                            color: Colors.blueAccent,
+                            color: mapFloatingColor,
                             borderRadius: BorderRadius.circular(50.0),
                             boxShadow: const [
                               BoxShadow(
@@ -167,7 +170,7 @@ class _CustomFloatingButtonState extends State<CustomFloatingButton> {
                               horizontal: 12.0,
                             ),
                             decoration: BoxDecoration(
-                              color: Colors.blueAccent,
+                              color: mapFloatingColor,
                               borderRadius: BorderRadius.circular(20.0),
                               boxShadow: const [
                                 BoxShadow(

@@ -3,7 +3,6 @@ import 'package:school_erp/res/assets_res.dart';
 
 //Default variables
 const String google_api_key = 'AIzaSyA1g6mpa9tyUByIKIS0eiIW04G8OmOOGp4';
-const Color primaryColor = Color(0xF44336FF);
 bool isEmailVerified = false;
 bool focusLiveLocation = true;
 const double defaultPadding = 16.0;
