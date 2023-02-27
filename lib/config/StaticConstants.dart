@@ -2,11 +2,15 @@ import 'package:flutter/material.dart';
 import 'package:school_erp/res/assets_res.dart';
 
 //Default variables
-const String google_api_key = 'AIzaSyA1g6mpa9tyUByIKIS0eiIW04G8OmOOGp4';
+const String googleApiKey = 'AIzaSyAn1uTgRQ4MpzdjsdzRRzG8Tjm_petNUQs';
 bool isEmailVerified = false;
 bool focusLiveLocation = true;
 const double defaultPadding = 16.0;
 double speedFont = 15.0;
+double speedBias = 3.611111111111;//to convert m/s to km/h
+
+String packageName = 'com.shamiit.school_erp';
+int directionApiDelay = 30;
 
 const String busIconAsset = AssetsRes.BUS;
 const String busOffIconAsset = AssetsRes.BUSOFF;

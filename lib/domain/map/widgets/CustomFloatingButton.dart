@@ -125,10 +125,12 @@ class _CustomFloatingButtonState extends State<CustomFloatingButton> {
                           ),
                         ),
                         FloatingActionButton(
+                          heroTag: UniqueKey(),
                           mini: floatingMini,
                           onPressed: () {
                             focusMe = !focusMe;
                             focusDest = false;
+                            getCurrentLocation();
                             setState(() {});
                           },
                           tooltip: 'Focus Me',
@@ -141,6 +143,7 @@ class _CustomFloatingButtonState extends State<CustomFloatingButton> {
                     if (selectedUid.isNotEmpty) const SizedBox(width: 8),
                     if (selectedUid.isNotEmpty)
                       FloatingActionButton(
+                        heroTag: UniqueKey(),
                         mini: floatingMini,
                         onPressed: () {
                           focusDest = !focusDest;
@@ -188,6 +191,7 @@ class _CustomFloatingButtonState extends State<CustomFloatingButton> {
                         if (isSettingOpen) const SizedBox(height: 8),
                         if (isSettingOpen)
                           FloatingActionButton(
+                            heroTag: UniqueKey(),
                             mini: floatingMini,
                             onPressed: () {
                               setState(() {
@@ -201,6 +205,7 @@ class _CustomFloatingButtonState extends State<CustomFloatingButton> {
                           ),
                         if (isSettingOpen) const SizedBox(height: 8),
                         FloatingActionButton(
+                          heroTag: UniqueKey(),
                           mini: floatingMini,
                           onPressed: () {
                             setState(() {

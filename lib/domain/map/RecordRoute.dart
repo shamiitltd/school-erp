@@ -4,9 +4,10 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_compass/flutter_compass.dart';
+import 'package:flutter_map/flutter_map.dart';
 import 'package:flutter_polyline_points/flutter_polyline_points.dart';
-import 'package:google_maps_flutter/google_maps_flutter.dart';
-import 'package:latlong2/latlong.dart' as latlonglib;
+import 'package:google_maps_flutter/google_maps_flutter.dart' as LatLngG;
+import 'package:latlong2/latlong.dart';
 import 'package:lite_rolling_switch/lite_rolling_switch.dart';
 import 'package:location/location.dart';
 import 'package:http/http.dart' as http;
@@ -18,6 +19,7 @@ import 'package:school_erp/domain/map/functions/DirectionsRepository.dart';
 import 'package:school_erp/domain/map/functions/RealTimeDb.dart';
 import 'package:school_erp/domain/map/models/Directions.dart';
 import 'package:school_erp/domain/map/widgets/CustomFloatingButton.dart';
+import 'package:school_erp/res/assets_res.dart';
 import 'package:school_erp/shared/functions/Computational.dart';
 import 'package:school_erp/shared/functions/popupSnakbar.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -25,31 +27,31 @@ import 'package:url_launcher/url_launcher.dart';
 import 'package:motion_sensors/motion_sensors.dart';
 import 'package:vector_math/vector_math_64.dart' hide Colors;
 
-class MapHomePage extends StatefulWidget {
-  const MapHomePage({Key? key}) : super(key: key);
+class MapRecordPageOSM extends StatefulWidget {
+  const MapRecordPageOSM({Key? key}) : super(key: key);
 
   @override
-  State<MapHomePage> createState() => MapHomePageState();
+  State<MapRecordPageOSM> createState() => MapRecordPageOSMState();
 }
 
-class MapHomePageState extends State<MapHomePage> {
-  BitmapDescriptor myLocationMaker = BitmapDescriptor.defaultMarker;
-  late GoogleMapController googleMapController;
-  final Completer<GoogleMapController> _controller = Completer();
+class MapRecordPageOSMState extends State<MapRecordPageOSM> {
+  MapController mapController = MapController();
   var firbaseClass = MapFirebase();
   Location location = Location();
   final user = FirebaseAuth.instance.currentUser;
+  final Vector3 _orientation = Vector3.zero();
+  List<Marker> markers = [];
+  List<LatLng> polyline = [];
+  LatLngBounds? bounds;
   late LatLng destination;
   late LatLng myLocation;
   late LatLng mapCameraLocation;
   LocationData? currentLocationData;
   LocationData? currentLocationDataOld;
   late StreamSubscription _firebaseSubscription;
-  List<LatLng> polylineCoordinates = [];
   late Directions _info;
-  bool infoUpdate = false;
 
-  Set<Marker> markers = {};
+  Set<Marker> markerSet = {};
   Set<Map<dynamic, dynamic>> allUserCompleteData = {};
 
   Map<dynamic, dynamic> currentUserdata = <dynamic, dynamic>{};
@@ -57,8 +59,21 @@ class MapHomePageState extends State<MapHomePage> {
   String currentUid = '';
   String selectedUid = '';
   String _selectedRoute = '';
+  var defaultIcon = personIconAsset;
+  bool infoUpdate = false;
+  bool isSetPloyLine = false;
   bool _mounted = true;
-  final Vector3 _orientation = Vector3.zero();
+  bool isLocationReady = true;
+  bool isPolylineReady = false;
+
+  Future<void> setUp() async {
+    getCurrentLocation();
+    startSensors();
+    zoomMap = await getZoomLevel(); //from sharedPrefs
+    if (_mounted) {
+      setState(() {});
+    }
+  }
 
   void loadRouteInfo() async {
     List<String> routeList = [];
@@ -91,14 +106,6 @@ class MapHomePageState extends State<MapHomePage> {
     setUp();
   }
 
-  void setUp() async {
-    getCurrentLocation();
-    zoomMap = await getZoomLevel(); //from sharedPrefs
-    if (_mounted) {
-      setState(() {});
-    }
-  }
-
   Future<void> firstDistanceLoaded(double newDistance) async {
     if (!distanceLoaded) {
       final prefs = await SharedPreferences.getInstance();
@@ -111,8 +118,24 @@ class MapHomePageState extends State<MapHomePage> {
   @override
   void dispose() {
     _firebaseSubscription.cancel();
+    mapController.dispose();
     _mounted = false;
     super.dispose();
+  }
+
+  Future<void> getLocationIcon() async {
+    firstDistanceLoaded(currentUserdata['distance'] ?? 0);
+    String busIconDynamic = busTopIconAsset;
+    String busOffIconDynamic = busTopOffIconAsset;
+    if (currentUserdata['trackMe'] == true) {
+      defaultIcon = currentUserdata['post'] == 'Driver'
+          ? busIconDynamic
+          : personIconAsset;
+    } else {
+      defaultIcon = currentUserdata['post'] == 'Driver'
+          ? busOffIconDynamic
+          : personOffIconAsset;
+    }
   }
 
   Future getCoordinatesByRootId() async {
@@ -130,42 +153,12 @@ class MapHomePageState extends State<MapHomePage> {
           }
         }
       });
-      getLocationIcon();
       if (_mounted) {
+        getLocationIcon();
+        updateOnScreenActive();
         setState(() {});
       }
     });
-  }
-
-  Future<void> getLocationIcon() async {
-    firstDistanceLoaded(currentUserdata['distance'] ?? 0);
-    var defaultIcon = personIconAsset;
-    if (currentUserdata['image'] != null &&
-        currentUserdata['trackMe'] == true) {
-      var url = Uri.parse(currentUserdata['image']);
-      var request = await http.get(url);
-      var dataBytes = request.bodyBytes;
-      myLocationMaker =
-          BitmapDescriptor.fromBytes(dataBytes.buffer.asUint8List());
-    } else {
-      String busIconDynamic = tiltMap > 30 ? busIconAsset : busTopIconAsset;
-      String busOffIconDynamic =
-          tiltMap > 30 ? busOffIconAsset : busTopOffIconAsset;
-      if (currentUserdata['trackMe'] == true) {
-        defaultIcon = currentUserdata['post'] == 'Driver'
-            ? busIconDynamic
-            : personIconAsset;
-      } else {
-        defaultIcon = currentUserdata['post'] == 'Driver'
-            ? busOffIconDynamic
-            : personOffIconAsset;
-      }
-      await BitmapDescriptor.fromAssetImage(
-              ImageConfiguration.empty, defaultIcon)
-          .then((value) {
-        myLocationMaker = value;
-      });
-    }
   }
 
   void getCurrentLocation() async {
@@ -176,6 +169,7 @@ class MapHomePageState extends State<MapHomePage> {
       myLocation = LatLng(setPrecision(currentLocationData!.latitude!, 3),
           setPrecision(currentLocationData!.longitude!, 3));
       mapCameraLocation = myLocation;
+      isPolylineReady = true;
       if (_mounted) {
         setState(() {});
       }
@@ -188,25 +182,20 @@ class MapHomePageState extends State<MapHomePage> {
           currentLocationData!.longitude!.toString(), bearingMap);
       myLocation = LatLng(setPrecision(currentLocationData!.latitude!, 3),
           setPrecision(currentLocationData!.longitude!, 3));
-      updateMapOnChange();
       currentLocationDataOld =
           await updateDistanceTravelled(currentLocationData);
-      isRefresh = true;
-      if (_mounted) {
-        setState(() {});
-      }
+      if (_mounted) setState(() {});
     });
   }
 
   Future<LocationData?> updateDistanceTravelled(
       LocationData? currentLocationData) async {
     currentLocationDataOld ??= currentLocationData;
-    var distance = const latlonglib.Distance();
+    var distance = const Distance();
     final meter = distance(
-        latlonglib.LatLng(currentLocationDataOld!.latitude!,
+        LatLng(currentLocationDataOld!.latitude!,
             currentLocationDataOld!.longitude!),
-        latlonglib.LatLng(
-            currentLocationData!.latitude!, currentLocationData.longitude!));
+        LatLng(currentLocationData!.latitude!, currentLocationData.longitude!));
     if (recordingStart) {
       distanceTravelled += meter / 1000;
       await setTotalDistanceTravelled(firbaseClass, meter / 1000);
@@ -215,9 +204,7 @@ class MapHomePageState extends State<MapHomePage> {
     return currentLocationData; //now this will became old data.
   }
 
-  void updateMapOnChange() {
-    updateCoordinates();
-    mapCameraController();
+  void startSensors() {
     FlutterCompass.events?.listen((event) {
       if (_mounted) {
         setState(() {
@@ -239,25 +226,26 @@ class MapHomePageState extends State<MapHomePage> {
     });
   }
 
+  void updateOnScreenActive() {
+    updateCoordinates();
+    mapCameraController();
+  }
+
   Future<void> mapCameraController() async {
-    googleMapController = await _controller.future;
     if (focusMe || focusDest) {
-      if (focusMe) {
-        googleMapController.animateCamera(CameraUpdate.newCameraPosition(
-            CameraPosition(
-                bearing: bearingMap,
-                tilt: tiltMap,
-                zoom: zoomMap,
-                target: LatLng(currentLocationData!.latitude!,
-                    currentLocationData!.longitude!))));
-      } else if (selectedUid.isNotEmpty) {
-        googleMapController.animateCamera(CameraUpdate.newCameraPosition(
-            CameraPosition(
-                bearing: bearingMap,
-                tilt: tiltMap,
-                zoom: zoomMap,
-                target: destination)));
-      }
+      try {
+        if (focusMe) {
+          // mapController.centerZoomFitBounds(bounds!);
+          mapController.moveAndRotate(
+              LatLng(currentLocationData!.latitude!,
+                  currentLocationData!.longitude!),
+              zoomMap,
+              netDirectionMyMap(bearingMap));
+        } else if (selectedUid.isNotEmpty) {
+          mapController.moveAndRotate(
+              destination, zoomMap, netDirectionMyMap(bearingMap));
+        }
+      } catch (e) {}
     }
   }
 
@@ -265,24 +253,26 @@ class MapHomePageState extends State<MapHomePage> {
     if (selectedUid.isEmpty) {
       return;
     }
-    final directions = await DirectionsRepository().getDirections(
-        origin: LatLng(
+    final direction = await DirectionsRepository().getOsmDirections(
+        origin: LatLngG.LatLng(
             currentLocationData!.latitude!, currentLocationData!.longitude!),
-        destination: destination);
-    if (directions.polylinePoints.isNotEmpty) {
-      polylineCoordinates = [];
-      directions.polylinePoints.forEach((PointLatLng point) {
-        polylineCoordinates.add(LatLng(point.latitude, point.longitude));
-      });
-    }
+        destination: convertLatLangToGLatLang(destination));
+    bounds = LatLngBounds(
+        LatLng(direction.bounds.northeast.latitude,
+            direction.bounds.northeast.longitude),
+        LatLng(direction.bounds.southwest.latitude,
+            direction.bounds.southwest.longitude));
+    polyline = convertPointLatLngToLatLng(direction.polylinePoints);
+
     infoUpdate = true;
-    _info = directions;
+    _info = direction;
     if (_mounted) {
       setState(() {});
     }
   }
 
   void updateCoordinates() async {
+    markers = [];
     if (selectedUid.isNotEmpty) {
       var val = allUserCompleteData
           .firstWhere((element) => element.containsKey(selectedUid));
@@ -290,61 +280,79 @@ class MapHomePageState extends State<MapHomePage> {
       destination = LatLng(double.parse(selectedUserdata['latitude']),
           double.parse(selectedUserdata['longitude']));
     }
-
-    markers.add(
-      Marker(
-        rotation: bearingMap,
-        infoWindow: InfoWindow(
-            title: '${currentUserdata['post']}: ${user?.displayName}',
-            snippet: 'Phone: ${currentUserdata['phone']}',
-            onTap: () {}),
-        icon: myLocationMaker,
-        markerId: MarkerId(user?.email as String),
-        position: LatLng(
+    markers.add(Marker(
+        key: Key(user?.email as String),
+        width: 50,
+        height: 50,
+        rotate: true,
+        point: LatLng(
             currentLocationData!.latitude!, currentLocationData!.longitude!),
-      ),
-    );
+        builder: (ctx) => Transform.rotate(
+              angle: degreeToRadians(normalizeAngle(bearingMap)),
+              child: IconButton(
+                icon: Image.asset(defaultIcon),
+                onPressed: () {
+                  showDialog(
+                    context: context,
+                    builder: (BuildContext context) {
+                      return AlertDialog(
+                        title: Text(
+                            '${currentUserdata['post']}: ${user?.displayName}'),
+                        content: Text('Phone: ${currentUserdata['phone']}'),
+                      );
+                    },
+                  );
+                },
+              ),
+            )));
+
     for (var element in allUserCompleteData) {
       element.forEach((key, value) async {
-        BitmapDescriptor locationMaker = BitmapDescriptor.defaultMarker;
-        if (value['image'] != null) {
-          var url = Uri.parse(value['image']);
-          var request = await http.get(url);
-          var dataBytes = request.bodyBytes;
-          locationMaker =
-              BitmapDescriptor.fromBytes(dataBytes.buffer.asUint8List());
-        } else {
-          String busIconDynamic =
-              tiltMap > tiltMapThreshold ? busIconAsset : busTopIconAsset;
-          await BitmapDescriptor.fromAssetImage(ImageConfiguration.empty,
-                  value['post'] == 'Driver' ? busIconDynamic : personIconAsset)
-              .then((value) => locationMaker = value);
-        }
-
+        String mapIcon =
+            value['post'] == 'Driver' ? busTopIconAsset : personIconAsset;
         double netDirection =
             netRotationDirection(value['direction'] ?? 0, bearingMap);
-        markers.add(
-          Marker(
-            rotation: netDirection,
-            onTap: () {
-              selectedUid = key;
-              selectedUserdata = value;
-              destination = LatLng(double.parse(value['latitude']),
-                  double.parse(value['longitude']));
-              getPolyPoints();
-            },
-            infoWindow: InfoWindow(
-                title: '${value['post']}: ${value['name']}',
-                snippet: 'Call: ${value['phone']}',
-                onTap: () {
-                  PopupSnackBar().makePhoneCall(value['phone']);
-                }),
-            icon: locationMaker,
-            markerId: MarkerId(key),
-            position: LatLng(double.parse(value['latitude']),
+        markers.add(Marker(
+            key: Key(key),
+            width: 50,
+            height: 50,
+            rotate: true,
+            point: LatLng(double.parse(value['latitude']),
                 double.parse(value['longitude'])),
-          ),
-        );
+            builder: (ctx) => Transform.rotate(
+                  angle: degreeToRadians(normalizeAngle(netDirection)),
+                  child: IconButton(
+                    icon: Image.asset(mapIcon),
+                    onPressed: () {
+                      selectedUid = key;
+                      selectedUserdata = value;
+                      destination = LatLng(double.parse(value['latitude']),
+                          double.parse(value['longitude']));
+                      getPolyPoints();
+                      focusDest = true;
+
+                      showDialog(
+                        context: context,
+                        builder: (BuildContext context) {
+                          return AlertDialog(
+                              title: Text('${value['post']}: ${value['name']}'),
+                              content: InkWell(
+                                onTap: () {
+                                  PopupSnackBar().makePhoneCall(value['phone']);
+                                },
+                                child: Text(
+                                  'Call: ${value['phone']}',
+                                  style: const TextStyle(
+                                    fontSize: 16.0,
+                                    color: Colors.blue,
+                                  ),
+                                ),
+                              ));
+                        },
+                      );
+                    },
+                  ),
+                )));
       });
     }
     if (_mounted) {
@@ -360,6 +368,14 @@ class MapHomePageState extends State<MapHomePage> {
         iconVisible = currentUserdata['trackMe'];
       });
     }
+    if (isPolylineReady) {
+      isPolylineReady = false;
+      getPolyPoints();
+      Future.delayed(Duration(seconds: directionApiDelay), () {
+        isPolylineReady = true;
+        if (_mounted) setState(() {});
+      });
+    }
 
     return Scaffold(
       appBar: AppBar(
@@ -370,7 +386,8 @@ class MapHomePageState extends State<MapHomePage> {
             const Expanded(
               flex: 2,
               child: Text(
-                'R:',textAlign: TextAlign.start,
+                'R:',
+                textAlign: TextAlign.start,
                 style: TextStyle(color: Colors.black, fontSize: 20.0),
               ),
             ),
@@ -388,26 +405,28 @@ class MapHomePageState extends State<MapHomePage> {
                           }).toList(),
                           onChanged: (value) async {
                             _selectedRoute = value ?? '';
-                            markers = {};
-                            selectedUid='';
-                            infoUpdate=false;
-                            polylineCoordinates=[];
+                            markers = [];
+                            selectedUid = '';
+                            infoUpdate = false;
+                            polyline = [];
                             if (_mounted) setState(() {});
                             await firbaseClass.setRoute(_selectedRoute);
                             getLocationIcon();
                           },
                         )
                       : Text(
-                          currentUserdata['route'] ?? 'Loading..',textAlign: TextAlign.start,
+                          currentUserdata['route'] ?? 'Loading..',
+                          textAlign: TextAlign.start,
                           style: const TextStyle(
                               color: Colors.black, fontSize: 20.0),
                         ))
-                  : const Text('Loading..',textAlign: TextAlign.start),
+                  : const Text('Loading..', textAlign: TextAlign.start),
             ),
             Expanded(
               flex: 5,
               child: Text(
-                '${distanceTravelled.toStringAsFixed(2)}Km',textAlign: TextAlign.start,
+                '${distanceTravelled.toStringAsFixed(2)}Km',
+                textAlign: TextAlign.start,
                 style: const TextStyle(color: Colors.black, fontSize: 20.0),
               ),
             ),
@@ -418,7 +437,8 @@ class MapHomePageState extends State<MapHomePage> {
             mainAxisAlignment: MainAxisAlignment.end,
             children: <Widget>[
               Padding(
-                padding: const EdgeInsets.only(top: 11.0,bottom: 11.0,right: 4),
+                padding:
+                    const EdgeInsets.only(top: 11.0, bottom: 11.0, right: 4),
                 child: LiteRollingSwitch(
                   width: 90,
                   //initial value
@@ -457,49 +477,54 @@ class MapHomePageState extends State<MapHomePage> {
           : Stack(
               alignment: Alignment.center,
               children: [
-                GoogleMap(
-                  onCameraMove: (object) => {
-                    if (_mounted)
-                      setState(() {
-                        mapCameraLocation = LatLng(
-                            object.target.latitude, object.target.longitude);
+                FlutterMap(
+                  mapController: mapController,
+                  options: MapOptions(
+                    onPositionChanged: (position, hasGesture) {
+                      if (isLocationReady) {
+                        isLocationReady = false;
                         focusMe = compareLatLang(
-                            myLocation, mapCameraLocation, zoomPrecision);
+                            convertLatLangToGLatLang(myLocation),
+                            convertLatLangToGLatLang(position.center!),
+                            zoomPrecision);
                         if (selectedUid.isNotEmpty) {
                           focusDest = compareLatLang(
-                              destination, mapCameraLocation, zoomPrecision);
+                              convertLatLangToGLatLang(destination),
+                              convertLatLangToGLatLang(position.center!),
+                              zoomPrecision);
                         }
-                      })
-                  },
-                  mapType: MapType.hybrid,
-                  tiltGesturesEnabled: true,
-                  rotateGesturesEnabled: true,
-                  mapToolbarEnabled: true,
-                  compassEnabled: true,
-                  buildingsEnabled: true,
-                  myLocationEnabled: true,
-                  trafficEnabled: true,
-                  scrollGesturesEnabled: true,
-                  zoomGesturesEnabled: true,
-                  myLocationButtonEnabled: false,
-                  zoomControlsEnabled: false,
-                  initialCameraPosition: CameraPosition(
-                      bearing: bearingMap,
-                      tilt: tiltMap,
-                      target: LatLng(currentLocationData!.latitude!,
-                          currentLocationData!.longitude!),
-                      zoom: zoomMap),
-                  polylines: {
-                    Polyline(
-                        polylineId: const PolylineId("route"),
-                        points: polylineCoordinates,
-                        color: primaryColor,
-                        width: 6)
-                  },
-                  markers: markers,
-                  onMapCreated: (mapController) {
-                    _controller.complete(mapController);
-                  },
+                        Future.delayed(const Duration(seconds: 2), () {
+                          isLocationReady = true;
+                          setState(() {});
+                        });
+                      }
+                      setState(() {});
+                    },
+                    bounds: bounds,
+                    rotation: netDirectionMyMap(bearingMap),
+                    zoom: zoomMap,
+                  ),
+                  children: [
+                    TileLayer(
+                      urlTemplate:
+                          'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
+                      // urlTemplate:'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
+                      userAgentPackageName: packageName,
+                      subdomains: ['a', 'b', 'c'],
+                    ),
+                    PolylineLayer(
+                      polylines: [
+                        Polyline(
+                          strokeWidth: 3,
+                          points: polyline,
+                          color: Colors.blue,
+                        ),
+                      ],
+                    ),
+                    MarkerLayer(
+                      markers: markers,
+                    )
+                  ],
                 ),
                 if (infoUpdate)
                   Positioned(

@@ -1,15 +1,20 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:google_maps_flutter/google_maps_flutter.dart';
+import 'package:location/location.dart';
 import 'package:school_erp/config/Colors.dart';
 import 'package:school_erp/config/DynamicConstants.dart';
+import 'package:school_erp/config/StaticConstants.dart';
 import 'package:school_erp/domain/map/MapHome.dart';
+import 'package:school_erp/domain/map/RecordRoute.dart';
 import 'package:school_erp/domain/map/functions/Computational.dart';
+import 'package:school_erp/domain/map/functions/RealTimeDb.dart';
 import 'package:school_erp/pages/dashboard.dart';
 import 'package:school_erp/pages/chat.dart';
 import 'package:school_erp/pages/fee.dart';
 import 'package:school_erp/pages/profile.dart';
-import 'package:school_erp/pages/trackbus.dart';
 import 'package:school_erp/res/assets_res.dart';
+import 'package:school_erp/shared/functions/Computational.dart';
 
 class MyHomePage extends StatefulWidget {
   const MyHomePage({super.key, required this.title});
@@ -21,9 +26,7 @@ class MyHomePage extends StatefulWidget {
 
 class _MyHomePageState extends State<MyHomePage> {
   final user = FirebaseAuth.instance.currentUser;
-  int _selectedIndex = 0;
   var currentPage = DrawerSections.dashboard;
-  int sepflag = 0; //serperate both drawer and bottom nav
 
   @override
   void initState() {
@@ -32,31 +35,35 @@ class _MyHomePageState extends State<MyHomePage> {
   }
 
   void _onItemTapped(int index) {
-    setState(() {
-      sepflag = 0;
-      _selectedIndex = index;
-      if (index == 0) {
-        currentPage = DrawerSections.dashboard;
-      } else if (index == 1) {
-        currentPage = DrawerSections.chat;
-      } else if (index == 2) {
-        currentPage = DrawerSections.trackbus;
-      } else if (index == 3) {
-        currentPage = DrawerSections.profile;
-      }
-    });
+    if (mounted) {
+      setState(() {
+        sepFlag = 0;
+        selectedIndex = index;
+        if (index == 0) {
+          currentPage = DrawerSections.dashboard;
+        } else if (index == 1) {
+          currentPage = DrawerSections.chat;
+        } else if (index == 2) {
+          currentPage = DrawerSections.profile;
+        } else if (index == 3) {
+          currentPage = DrawerSections.trackbus;
+          Navigator.of(context).push(MaterialPageRoute(
+            builder: (context) => const MapHomePage(),
+          ));
+        }
+      });
+    }
   }
 
   @override
   Widget build(BuildContext context) {
+    // getCurrentLocation();
     var container;
     if (currentPage == DrawerSections.dashboard) {
       container = Dashboard();
     } else if (currentPage == DrawerSections.chat) {
       container = ChatActivity();
-    } else if (currentPage == DrawerSections.trackbus) {
-      container = MapHomePage();
-    } else if (currentPage == DrawerSections.fee) {
+    }  else if (currentPage == DrawerSections.fee) {
       container = FeeActivity();
     } else if (currentPage == DrawerSections.settings) {
       container = ProfileActivity();
@@ -66,8 +73,10 @@ class _MyHomePageState extends State<MyHomePage> {
       container = FeeActivity();
     } else if (currentPage == DrawerSections.profile) {
       container = ProfileActivity();
-    }else if (currentPage == DrawerSections.logout) {
+    } else if (currentPage == DrawerSections.logout) {
       FirebaseAuth.instance.signOut();
+    }else{
+      container = const Text('Empty');
     }
 
     return Scaffold(
@@ -98,14 +107,14 @@ class _MyHomePageState extends State<MyHomePage> {
               currentPage == DrawerSections.dashboard ? true : false),
           menuItem(2, "Chat", Icons.people_alt_outlined,
               currentPage == DrawerSections.chat ? true : false),
-          menuItem(3, "Track Bus", Icons.bus_alert,
-              currentPage == DrawerSections.trackbus ? true : false),
-          menuItem(4, "Fee", Icons.currency_rupee,
+          menuItem(3, "Fee", Icons.currency_rupee,
               currentPage == DrawerSections.fee ? true : false),
+          menuItem(4, "Track Bus GMAP", Icons.bus_alert,
+              currentPage == DrawerSections.trackbus ? true : false),
           Divider(),
           menuItem(5, "Settings", Icons.settings_outlined,
               currentPage == DrawerSections.settings ? true : false),
-          menuItem(6, "Notifications", Icons.notifications_outlined,
+          menuItem(6, "Track Bus OSM", Icons.bus_alert_outlined,
               currentPage == DrawerSections.notifications ? true : false),
           Divider(),
           menuItem(7, "Send feedback", Icons.feedback_outlined,
@@ -124,35 +133,43 @@ class _MyHomePageState extends State<MyHomePage> {
       child: InkWell(
         onTap: () {
           Navigator.pop(context);
-          setState(() {
-            if (id > navlen) {
-              _selectedIndex = 0;
-              sepflag = 1;
-            } else {
-              _selectedIndex = id - 1;
-              sepflag = 0;
-            }
-            if (id == 1) {
-              currentPage = DrawerSections.dashboard;
-            } else if (id == 2) {
-              currentPage = DrawerSections.chat;
-            } else if (id == 3) {
-              currentPage = DrawerSections.trackbus;
-            } else if (id == 4) {
-              currentPage = DrawerSections.fee;
-            } else if (id == 5) {
-              currentPage = DrawerSections.settings;
-            } else if (id == 6) {
-              currentPage = DrawerSections.notifications;
-            } else if (id == 7) {
-              currentPage = DrawerSections.send_feedback;
-            }else if (id == 8) {
-              currentPage = DrawerSections.logout;
-            }
-          });
+          if (mounted) {
+            setState(() {
+              if (id > navlen) {
+                selectedIndex = 0;
+                sepFlag = 1;
+              } else {
+                selectedIndex = id - 1;
+                sepFlag = 0;
+              }
+              if (id == 1) {
+                currentPage = DrawerSections.dashboard;
+              } else if (id == 2) {
+                currentPage = DrawerSections.chat;
+              } else if (id == 3) {
+                currentPage = DrawerSections.fee;
+              } else if (id == 4) {
+                currentPage = DrawerSections.trackbus;
+                Navigator.of(context).push(MaterialPageRoute(
+                  builder: (context) => const MapHomePage(),
+                ));
+              } else if (id == 5) {
+                currentPage = DrawerSections.settings;
+              } else if (id == 6) {
+                currentPage = DrawerSections.notifications;
+                Navigator.of(context).push(MaterialPageRoute(
+                  builder: (context) => const MapRecordPageOSM(),
+                ));
+              } else if (id == 7) {
+                currentPage = DrawerSections.send_feedback;
+              } else if (id == 8) {
+                currentPage = DrawerSections.logout;
+              }
+            });
+          }
         },
         child: Padding(
-          padding: EdgeInsets.symmetric(vertical: 15, horizontal: 0),
+          padding: const EdgeInsets.symmetric(vertical: 15, horizontal: 0),
           child: Row(
             children: [
               Expanded(
@@ -166,7 +183,7 @@ class _MyHomePageState extends State<MyHomePage> {
                 flex: 3,
                 child: Text(
                   title,
-                  style: TextStyle(
+                  style: const TextStyle(
                     color: Colors.black,
                     fontSize: 16,
                   ),
@@ -193,19 +210,19 @@ class _MyHomePageState extends State<MyHomePage> {
           backgroundColor: Colors.brown[bnBarColor],
         ),
         BottomNavigationBarItem(
-          icon: const Icon(Icons.bus_alert),
-          label: 'Track Bus',
+          icon: const Icon(Icons.person_outline_outlined),
+          label: 'Profile',
           backgroundColor: Colors.green[bnBarColor],
         ),
         BottomNavigationBarItem(
-          icon: const Icon(Icons.person_outline_outlined),
-          label: 'Profile',
+          icon: const Icon(Icons.bus_alert),
+          label: 'Track Bus',
           backgroundColor: Colors.purple[bnBarColor],
         ),
       ],
-      currentIndex: _selectedIndex,
+      currentIndex: selectedIndex,
       selectedItemColor:
-          sepflag == 0 ? Colors.deepOrange[deepColor] : Colors.white,
+      sepFlag == 0 ? Colors.deepOrange[deepColor] : Colors.white,
       onTap: _onItemTapped,
     );
   }
@@ -216,11 +233,13 @@ class _MyHomePageState extends State<MyHomePage> {
       child: InkWell(
         onTap: () {
           Navigator.pop(context);
-          setState(() {
-            sepflag = 0;
-            _selectedIndex = 3;
-            currentPage = DrawerSections.profile;
-          });
+          if (mounted) {
+            setState(() {
+              sepFlag = 0;
+              selectedIndex = 2;
+              currentPage = DrawerSections.profile;
+            });
+          }
         },
         child: Container(
           width: double.infinity,
@@ -241,7 +260,7 @@ class _MyHomePageState extends State<MyHomePage> {
               ),
               Text(
                 '${user?.displayName}',
-                style: TextStyle(color: Colors.white, fontSize: 20),
+                style: const TextStyle(color: Colors.white, fontSize: 20),
               ),
               Text(
                 "${user?.email}",

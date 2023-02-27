@@ -1,5 +1,7 @@
+
 import 'package:flutter_polyline_points/flutter_polyline_points.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
+import 'package:school_erp/domain/map/functions/Computational.dart';
 
 class Directions {
   final LatLngBounds bounds;
@@ -39,6 +41,36 @@ class Directions {
       bounds: bounds,
       polylinePoints:
       PolylinePoints().decodePolyline(data['overview_polyline']['points']),
+      totalDistance: distance,
+      totalDuration: duration,
+    );
+  }
+
+
+  factory Directions.fromOsmMap(Map<String, dynamic> map) {
+    List<PointLatLng> polylinePointLatLang = [];
+    final result = Map<String, dynamic>.from(map['routes'][0]);
+    final polylinePoints = result['geometry']['coordinates'];
+
+    for (var point in polylinePoints) {
+      polylinePointLatLang.add(PointLatLng(point[1], point[0]));
+    }
+    final northeast = map['waypoints'][0]['location'];
+    final southwest = map['waypoints'][1]['location'];
+    final bounds = LatLngBounds(
+      northeast: LatLng(northeast[1], northeast[0]),
+      southwest: LatLng(southwest[1], southwest[0]),
+    );
+
+    // Distance & Duration
+    final durationVal = result['duration'];
+    final distanceVal = result['distance'];
+    String distance = formatDistance(distanceVal);
+    String duration = formatDuration(durationVal.toInt());
+
+    return Directions(
+      bounds: bounds,
+      polylinePoints:polylinePointLatLang,
       totalDistance: distance,
       totalDuration: duration,
     );

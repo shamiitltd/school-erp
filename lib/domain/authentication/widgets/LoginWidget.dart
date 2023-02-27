@@ -146,7 +146,8 @@ class _LoginWidgetState extends State<LoginWidget> {
         Navigator.of(context).pop();
         Navigator.of(context).popUntil((route) => route.isFirst);
       }).catchError((error) {
-        PopupSnackBar.showSnackBar(error);
+        // print(error);
+        PopupSnackBar.showSnackBar(error.toString());
         Navigator.of(context).pop();
       });
     } on FirebaseAuthException catch(e){

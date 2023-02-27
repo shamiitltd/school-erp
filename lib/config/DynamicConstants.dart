@@ -1,7 +1,21 @@
 
 //Dynamic variables
+import 'package:google_maps_flutter/google_maps_flutter.dart';
+import 'package:location/location.dart';
+
+int selectedIndex = 0;
+int sepFlag = 0; //serperate both drawer and bottom nav
+
 double distanceTravelled = 0;
 double totalDistanceTravelled=0;
+// late LatLng myLocation;
+// late LatLng mapCameraLocation;
+// LocationData? currentLocationData;
+// LocationData? currentLocationDataOld;
+bool recordingStart = false;
+bool distanceLoaded = false;
+bool isLocationBackground = true;
+
 
 bool focusMe = true;
 bool focusDest = false;

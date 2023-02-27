@@ -10,4 +10,4 @@ const Color mapSliderInActiveColor = Color(0xFFF7F7FA);
 
 int bnBarColor = 200;
 int deepColor = 800;
-int navlen = 3;
+int navlen = 4;
