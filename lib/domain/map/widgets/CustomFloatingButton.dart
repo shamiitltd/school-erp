@@ -7,7 +7,8 @@ import 'package:school_erp/domain/map/functions/RealTimeDb.dart';
 
 class CustomFloatingButton extends StatefulWidget {
   final String selectedUid;
-  const CustomFloatingButton({Key? key, required this.selectedUid})
+  final double maxZoom;
+  const CustomFloatingButton({Key? key, required this.selectedUid, required this.maxZoom})
       : super(key: key);
 
   @override
@@ -16,9 +17,10 @@ class CustomFloatingButton extends StatefulWidget {
 
 class _CustomFloatingButtonState extends State<CustomFloatingButton> {
   late String selectedUid;
-
+  late double maxZoom;
   Future<void> setValues() async {
     selectedUid = widget.selectedUid;
+    maxZoom = widget.maxZoom;
     totalDistanceTravelled = await getTotalDistanceTravelled();
     setState(() {});
   }
@@ -75,7 +77,7 @@ class _CustomFloatingButtonState extends State<CustomFloatingButton> {
                       setState(() {});
                     },
                     min: 0.0,
-                    max: 22.0,
+                    max: maxZoom,
                   ),
                 ],
               ),

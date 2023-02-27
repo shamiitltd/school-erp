@@ -70,6 +70,7 @@ class MapRecordPageOSMState extends State<MapRecordPageOSM> {
     getCurrentLocation();
     startSensors();
     zoomMap = await getZoomLevel(); //from sharedPrefs
+    focusMe = true;
     if (_mounted) {
       setState(() {});
     }
@@ -296,6 +297,9 @@ class MapRecordPageOSMState extends State<MapRecordPageOSM> {
                     context: context,
                     builder: (BuildContext context) {
                       return AlertDialog(
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(16.0),
+                        ),
                         title: Text(
                             '${currentUserdata['post']}: ${user?.displayName}'),
                         content: Text('Phone: ${currentUserdata['phone']}'),
@@ -335,6 +339,9 @@ class MapRecordPageOSMState extends State<MapRecordPageOSM> {
                         context: context,
                         builder: (BuildContext context) {
                           return AlertDialog(
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(16.0),
+                              ),
                               title: Text('${value['post']}: ${value['name']}'),
                               content: InkWell(
                                 onTap: () {
@@ -556,7 +563,8 @@ class MapRecordPageOSMState extends State<MapRecordPageOSM> {
                   ),
               ],
             ),
-      floatingActionButton: CustomFloatingButton(selectedUid: selectedUid),
+      floatingActionButton:
+          CustomFloatingButton(selectedUid: selectedUid, maxZoom: 15),
     );
   }
 }

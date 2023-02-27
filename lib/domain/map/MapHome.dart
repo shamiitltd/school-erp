@@ -94,6 +94,7 @@ class MapHomePageState extends State<MapHomePage> {
   void setUp() async {
     getCurrentLocation();
     zoomMap = await getZoomLevel(); //from sharedPrefs
+    focusMe=true;
     if (_mounted) {
       setState(() {});
     }
@@ -188,11 +189,10 @@ class MapHomePageState extends State<MapHomePage> {
           currentLocationData!.longitude!.toString(), bearingMap);
       myLocation = LatLng(setPrecision(currentLocationData!.latitude!, 3),
           setPrecision(currentLocationData!.longitude!, 3));
-      updateMapOnChange();
       currentLocationDataOld =
           await updateDistanceTravelled(currentLocationData);
-      isRefresh = true;
       if (_mounted) {
+        updateMapOnChange();
         setState(() {});
       }
     });
@@ -217,7 +217,6 @@ class MapHomePageState extends State<MapHomePage> {
 
   void updateMapOnChange() {
     updateCoordinates();
-    mapCameraController();
     FlutterCompass.events?.listen((event) {
       if (_mounted) {
         setState(() {
@@ -237,6 +236,7 @@ class MapHomePageState extends State<MapHomePage> {
         });
       }
     });
+    mapCameraController();
   }
 
   Future<void> mapCameraController() async {
@@ -531,7 +531,7 @@ class MapHomePageState extends State<MapHomePage> {
                   ),
               ],
             ),
-      floatingActionButton: CustomFloatingButton(selectedUid: selectedUid),
+      floatingActionButton: CustomFloatingButton(selectedUid: selectedUid, maxZoom: 22.0),
     );
   }
 }
