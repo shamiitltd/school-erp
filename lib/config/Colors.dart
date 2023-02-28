@@ -11,6 +11,9 @@ const Color mapSliderInActiveColor = Color(0xFFF7F7FA);
 const Color loginColor1 = Color(0xFFCB2B93);
 const Color loginColor2 = Color(0xFF9546C4);
 const Color loginColor3 = Color(0xFF5E61F4);
+const Color loginIconColor = Color(0xFFF7F7FA);
+const Color loginButtonColor = Color(0xFFF2F3FA);
+const Color loginTextColor = Color(0xFFF2F3FA);
 
 
 int bnBarColor = 200;
