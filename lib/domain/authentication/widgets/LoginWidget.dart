@@ -30,127 +30,113 @@ class _LoginWidgetState extends State<LoginWidget> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: Container(
+      body: Form(
         key: _formKey,
-        width: MediaQuery.of(context).size.width,
-        height: MediaQuery.of(context).size.height,
-        decoration: const BoxDecoration(
-          gradient: LinearGradient(
-            colors: [
-              loginColor1, loginColor2, loginColor3,
-            ],
-            begin: Alignment.topCenter, end: Alignment.bottomCenter,
-          )
-        ),
-        child: SingleChildScrollView(
-          child: Padding(
-            padding:  EdgeInsets.fromLTRB(20, MediaQuery.of(context).size.height*0.2, 20, 0),
-            child: Column(
-              children: <Widget>[
-                const SizedBox(height: 30),
-                logoWidget("assets/shamiitlogo.png"),
-                TextFormField(
-                  controller: emailController,
-                  textInputAction: TextInputAction.next,
-                  cursorColor: Colors.white,
-                  style: TextStyle(color: Colors.white.withOpacity(0.9)),
-                  decoration: InputDecoration(
-                    prefixIcon:const Icon(Icons.person_outline,color: Colors.white,),
-                      labelText: 'Enter your email',
-                    labelStyle: TextStyle(color: Colors.white.withOpacity(0.9)),
-                    filled: true,
-                    floatingLabelBehavior: FloatingLabelBehavior.never,
-                    fillColor: Colors.white.withOpacity(0.3),
-                    border: OutlineInputBorder(borderRadius: BorderRadius.circular(30.0),
-                    borderSide: const BorderSide(width: 0,style: BorderStyle.none)),
-                  ),
-                  autovalidateMode: AutovalidateMode.onUserInteraction,
-                  validator: (email) => email != null && !EmailValidator.validate(email)? 'Enter a valid email':null,
-                  onFieldSubmitted: (value) {
-                    FocusScope.of(context).unfocus();
-                    _formKey.currentState!.save();
-                  },
-                ),
-                const SizedBox(height: 20),
-                TextFormField(
-                  controller: passwordController,
-                  textInputAction: TextInputAction.next,
-                  cursorColor: Colors.white,
-                  style: TextStyle(color: Colors.white.withOpacity(0.9)),
-                  decoration: InputDecoration(
-                    prefixIcon:const Icon(Icons.lock,color: Colors.white,),
-                      labelText: 'Enter your Password',
-                    labelStyle: TextStyle(color: Colors.white.withOpacity(0.9)),
-                    filled: true,
-                    floatingLabelBehavior: FloatingLabelBehavior.never,
-                    fillColor: Colors.white.withOpacity(0.3),
-                    border: OutlineInputBorder(borderRadius: BorderRadius.circular(30.0),
-                        borderSide: const BorderSide(width: 0,style: BorderStyle.none)),
-                  ),
-                  obscureText: true,
-                  autovalidateMode: AutovalidateMode.onUserInteraction,
-                  validator: (value) => value != null && value.length < 6? 'Enter min 6 characters':null,
-                  onFieldSubmitted: (_) {
-                    _formKey.currentState!.validate();
-                    _formKey.currentState!.save();
-                  },
-                ),
-                const SizedBox(height: 10),
+        child: Container(
 
-                ElevatedButton.icon(
-                    style: ElevatedButton.styleFrom(
-                        minimumSize: const Size.fromHeight(50),
-                      backgroundColor: Colors.white,
-                    ),
-                    onPressed: () {
-                      if (_formKey.currentState!.validate()) {
-                        _formKey.currentState!.save();
-                        signIn();
-                        // Submit form data here...
-                      }
-                    },
-                    icon: const Icon(Icons.lock_open, size: 32,color: Colors.black,),
-                    label: const Text(
-                      'Sign In',
-                      style: TextStyle(fontSize: 24, color: Colors.black),
-                    ),
-
-                ),
-                const SizedBox(height: 24),
-                GestureDetector(
-                  child: Text(
-                    'Register New User',
-                    style: TextStyle(
-                        decoration: TextDecoration.underline,
-                        color: Theme.of(context).colorScheme.secondary,
-                        fontSize: 20
-                    ),
-                  ),
-                  onTap: (){
-                    Navigator.of(context).push(MaterialPageRoute(
-                      builder: (context)=> const RegisterUser(),
-                      // builder: (context)=> const ForgotPassword(),
-                    ));
-                  },
-                ),
-                const SizedBox(height: 24),
-                GestureDetector(
-                  child: Text(
-                    'Forgot Password?',
-                    style: TextStyle(
-                        decoration: TextDecoration.underline,
-                        color: Theme.of(context).colorScheme.secondary,
-                        fontSize: 20
-                    ),
-                  ),
-                  onTap: (){
-                    Navigator.of(context).push(MaterialPageRoute(
-                      builder: (context)=> const ForgotPassword(),
-                    ));
-                  },
-                ),
-
+          width: MediaQuery.of(context).size.width,
+          height: MediaQuery.of(context).size.height,
+          decoration: const BoxDecoration(
+            gradient: LinearGradient(
+              colors: [
+                loginColor1, loginColor2, loginColor3,
               ],
+              begin: Alignment.topCenter, end: Alignment.bottomCenter,
+            )
+          ),
+          child: SingleChildScrollView(
+            child: Padding(
+              padding:  EdgeInsets.fromLTRB(20, MediaQuery.of(context).size.height*0.2, 20, 0),
+              child: Column(
+                children: <Widget>[
+                  const SizedBox(height: 30),
+                  logoWidget("assets/shamiitlogo.png"),
+                  TextFormField(
+                    controller: emailController,
+                    textInputAction: TextInputAction.next,
+                    cursorColor: Colors.white,
+                    style: TextStyle(color: Colors.white.withOpacity(0.9)),
+                    decoration: InputDecoration(
+                      prefixIcon:const Icon(Icons.person_outline,color: Colors.white,),
+                        labelText: 'Enter your email',
+                      labelStyle: TextStyle(color: Colors.white.withOpacity(0.9)),
+                      filled: true,
+                      floatingLabelBehavior: FloatingLabelBehavior.never,
+                      fillColor: Colors.white.withOpacity(0.3),
+                      border: OutlineInputBorder(borderRadius: BorderRadius.circular(30.0),
+                      borderSide: const BorderSide(width: 0,style: BorderStyle.none)),
+                    ),
+                    autovalidateMode: AutovalidateMode.onUserInteraction,
+                    validator: (email) => email != null && !EmailValidator.validate(email)? 'Enter a valid email':null,
+                    onFieldSubmitted: (value) {
+                      FocusScope.of(context).unfocus();
+                      _formKey.currentState!.save();
+                    },
+                  ),
+                  const SizedBox(height: 20),
+                  TextFormField(
+                    controller: passwordController,
+                    textInputAction: TextInputAction.next,
+                    cursorColor: Colors.white,
+                    style: TextStyle(color: Colors.white.withOpacity(0.9)),
+                    decoration: InputDecoration(
+                      prefixIcon:const Icon(Icons.lock,color: Colors.white,),
+                        labelText: 'Enter your Password',
+                      labelStyle: TextStyle(color: Colors.white.withOpacity(0.9)),
+                      filled: true,
+                      floatingLabelBehavior: FloatingLabelBehavior.never,
+                      fillColor: Colors.white.withOpacity(0.3),
+                      border: OutlineInputBorder(borderRadius: BorderRadius.circular(30.0),
+                          borderSide: const BorderSide(width: 0,style: BorderStyle.none)),
+                    ),
+                    obscureText: true,
+                    autovalidateMode: AutovalidateMode.onUserInteraction,
+                    validator: (value) => value != null && value.length < 6? 'Enter min 6 characters':null,
+                    onFieldSubmitted: (_) {
+                      _formKey.currentState!.validate();
+                      _formKey.currentState!.save();
+                    },
+                  ),
+                  const SizedBox(height: 10),
+                  SignInSignUpButton(context, true, (){
+
+                  }),
+                  const SizedBox(height: 24),
+                  GestureDetector(
+                    child: Text(
+                      'Register New User',
+                      style: TextStyle(
+                          decoration: TextDecoration.underline,
+                          color: Theme.of(context).colorScheme.secondary,
+                          fontSize: 20
+                      ),
+                    ),
+                    onTap: (){
+                      Navigator.of(context).push(MaterialPageRoute(
+                        builder: (context)=> const RegisterUser(),
+                        // builder: (context)=> const ForgotPassword(),
+                      ));
+                    },
+                  ),
+                  const SizedBox(height: 24),
+                  GestureDetector(
+                    child: Text(
+                      'Forgot Password?',
+                      style: TextStyle(
+                          decoration: TextDecoration.underline,
+                          color: Theme.of(context).colorScheme.secondary,
+                          fontSize: 20
+                      ),
+                    ),
+                    onTap: (){
+                      Navigator.of(context).push(MaterialPageRoute(
+                        builder: (context)=> const ForgotPassword(),
+                      ));
+                    },
+                  ),
+
+                ],
+              ),
             ),
           ),
         ),
