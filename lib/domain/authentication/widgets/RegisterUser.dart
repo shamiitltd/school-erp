@@ -259,7 +259,9 @@ class _RegisterUserState extends State<RegisterUser> {
                     style: TextStyle(color: loginTextColor.withOpacity(0.9)),
                     decoration: InputDecoration(
                       prefixIcon:const Icon(Icons.call,color: loginIconColor,),
-                      labelText: 'Enter Phone number',
+                      labelText: 'Enter phone number',
+                      hintText: 'Enter phone number',
+                      prefixText: _selectedCountryCode,
                       labelStyle: TextStyle(color: loginTextColor.withOpacity(0.9)),
                       border: OutlineInputBorder(borderRadius: BorderRadius.circular(30.0),
                           borderSide: const BorderSide(width: 0,style: BorderStyle.solid,color: loginIconColor)),
