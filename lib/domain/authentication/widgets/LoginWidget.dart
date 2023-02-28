@@ -97,6 +97,27 @@ class _LoginWidgetState extends State<LoginWidget> {
                     },
                   ),
                   const SizedBox(height: 10),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.end,
+                    children: [
+                      GestureDetector(
+
+                        child: const Text(
+                          'Forgot Password?',
+                          style: TextStyle(
+                              color: loginIconColor,
+                              fontSize: 20
+                          ),
+                        ),
+                        onTap: (){
+                          Navigator.of(context).push(MaterialPageRoute(
+                            builder: (context)=> const ForgotPassword(),
+                          ));
+                        },
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 20),
                   ElevatedButton.icon(
                       style: ElevatedButton.styleFrom(
                           minimumSize: const Size.fromHeight(50),
@@ -130,21 +151,6 @@ class _LoginWidgetState extends State<LoginWidget> {
                       Navigator.of(context).push(MaterialPageRoute(
                         builder: (context)=> const RegisterUser(),
                         // builder: (context)=> const ForgotPassword(),
-                      ));
-                    },
-                  ),
-                  const SizedBox(height: 24),
-                  GestureDetector(
-                    child: const Text(
-                      'Forgot Password?',
-                      style: TextStyle(
-                          color: loginIconColor,
-                          fontSize: 20
-                      ),
-                    ),
-                    onTap: (){
-                      Navigator.of(context).push(MaterialPageRoute(
-                        builder: (context)=> const ForgotPassword(),
                       ));
                     },
                   ),
