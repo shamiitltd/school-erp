@@ -4,13 +4,13 @@ import 'package:email_validator/email_validator.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/material.dart';
-import 'package:location/location.dart';
+import 'package:school_erp/config/Colors.dart';
 import 'package:school_erp/config/Country.dart';
 import 'package:school_erp/config/DynamicConstants.dart';
 import 'package:school_erp/config/StaticConstants.dart';
 import 'package:school_erp/domain/authentication/functions/RealTimeDb.dart';
 import 'package:school_erp/domain/authentication/widgets/LoginWidget.dart';
-import 'package:school_erp/domain/map/functions/RealTimeDb.dart';
+import 'package:school_erp/domain/authentication/widgets/ResuableWidgets.dart';
 import 'package:school_erp/shared/functions/popupSnakbar.dart';
 
 
@@ -111,229 +111,290 @@ class _RegisterUserState extends State<RegisterUser> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Form'),
-        backgroundColor: Colors.orange,
-      ),
       body: Form(
         key: _formKey,
-        child: SingleChildScrollView(
-          padding: const EdgeInsets.all(16),
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: <Widget>[
-              const SizedBox(height: 40),
-              TextFormField(
-                controller: displayNameController,
-                textInputAction: TextInputAction.next,
-                decoration: const InputDecoration(labelText: 'Enter your Name'),
-                autovalidateMode: AutovalidateMode.onUserInteraction,
-                validator: (value) => value != null && value.length < 2
-                    ? 'Please enter a valid name'
-                    : null,
-                onFieldSubmitted: (value) {
-                  FocusScope.of(context).unfocus();
-                  _formKey.currentState!.save();
-                },
-              ),
-              const SizedBox(height: 5),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Expanded(
-                    child: Text('Select Post:'),
-                    flex: 2,
-                  ),
-                  Expanded(
-                    flex: 3,
-                    child: (_selectedYourPost.isNotEmpty)
-                        ? DropdownButton(
-                            value: _selectedYourPost,
-                            items: userPosts.map((country) {
-                              return DropdownMenuItem(
-                                value: country,
-                                child: Text(country),
-                              );
-                            }).toList(),
-                            onChanged: (value) {
-                              setState(() {
-                                _selectedYourPost = value!;
-                              });
-                            },
-                          )
-                        : Text('Loading...'),
-                  ),
+        child: Container(
+          width: MediaQuery.of(context).size.width,
+          height: MediaQuery.of(context).size.height,
+          decoration:  const BoxDecoration(
+              gradient: LinearGradient(
+                colors: [
+                  loginColor1, loginColor2, loginColor3,
                 ],
-              ),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Expanded(
-                    child: Text('Select Route:'),
-                    flex: 2,
+                begin: Alignment.topCenter, end: Alignment.bottomCenter,
+              )
+          ),
+          child: SingleChildScrollView(
+            padding: EdgeInsets.fromLTRB(10, MediaQuery.of(context).size.height*0.102, 10, 0),
+            child: Column(
+              children: <Widget>[
+                const SizedBox(height: 20),
+                logoWidget("assets/shamiitlogo.png"),
+                TextFormField(
+                  controller: displayNameController,
+                  textInputAction: TextInputAction.next,
+                  cursorColor: loginIconColor,
+                  style: TextStyle(color: loginIconColor.withOpacity(0.9)),
+                  decoration: InputDecoration(
+                      prefixIcon:const Icon(Icons.person_outline,color: loginIconColor,),
+                      labelText: 'Enter your Name',
+                    labelStyle: TextStyle(color: loginIconColor.withOpacity(0.9)),
+                    filled: true,
+                    floatingLabelBehavior: FloatingLabelBehavior.never,
+                    fillColor: loginIconColor.withOpacity(0.3),
+                    border: OutlineInputBorder(borderRadius: BorderRadius.circular(30.0),
+                        borderSide: const BorderSide(width: 0,style: BorderStyle.none)),
                   ),
-                  Expanded(
-                    flex: 3,
-                    child: (_selectedYourRoute.isNotEmpty)
-                        ? DropdownButton(
-                            value: _selectedYourRoute,
-                            items: userRoute.map((country) {
-                              return DropdownMenuItem(
-                                value: country,
-                                child: Text(country),
-                              );
-                            }).toList(),
-                            onChanged: (value) {
-                              setState(() {
-                                _selectedYourRoute = value!;
-                              });
-                            },
-                          )
-                        : Text('Loading...'),
-                  ),
-                ],
-              ),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Expanded(
-                    child: Text('Select country:'),
-                    flex: 2,
-                  ),
-                  Expanded(
-                    flex: 3,
-                    child: DropdownButton(
-                      value: _selectedCountryName,
-                      items: uniquelist.map((country) {
-                        return DropdownMenuItem(
-                          value: country,
-                          child: Text(country),
-                        );
-                      }).toList(),
-                      onChanged: (value) {
-                        setState(() {
-                          _selectedCountryCode = _countries[value]!;
-                          _selectedCountryName = value!;
-                        });
-                      },
-                    ),
-                  ),
-                ],
-              ),
-              TextFormField(
-                controller: phoneController,
-                textInputAction: TextInputAction.next,
-                keyboardType: TextInputType.phone,
-                decoration: InputDecoration(
-                  labelText: 'Enter phone number',
-                  hintText: 'Enter phone number',
-                  prefixText: _selectedCountryCode,
-                ),
-                autovalidateMode: AutovalidateMode.onUserInteraction,
-                validator: (value) => !isValidPhoneNumber(value)
-                    ? "Enter Correct phone number"
-                    : null,
-                onFieldSubmitted: (value) {
-                  FocusScope.of(context).unfocus();
-                  _formKey.currentState!.save();
-                },
-              ),
-              const SizedBox(height: 5),
-              TextFormField(
-                controller: emailController,
-                textInputAction: TextInputAction.next,
-                decoration:
-                    const InputDecoration(labelText: 'Enter your email'),
-                autovalidateMode: AutovalidateMode.onUserInteraction,
-                validator: (email) =>
-                    email != null && !EmailValidator.validate(email)
-                        ? 'Enter a valid email'
-                        : null,
-                onFieldSubmitted: (value) {
-                  FocusScope.of(context).unfocus();
-                  _formKey.currentState!.save();
-                },
-              ),
-              const SizedBox(height: 5),
-              TextFormField(
-                controller: passwordController,
-                textInputAction: TextInputAction.next,
-                decoration:
-                    const InputDecoration(labelText: 'Enter your Password'),
-                obscureText: true,
-                autovalidateMode: AutovalidateMode.onUserInteraction,
-                validator: (value) => value != null && value.length < 6
-                    ? 'Enter min 6 characters'
-                    : null,
-                onFieldSubmitted: (_) {
-                  FocusScope.of(context).unfocus();
-                  _formKey.currentState!.save();
-                },
-              ),
-              const SizedBox(height: 5),
-              TextFormField(
-                controller: confirmPassController,
-                textInputAction: TextInputAction.next,
-                decoration:
-                    const InputDecoration(labelText: 'Confirm your Password'),
-                obscureText: true,
-                autovalidateMode: AutovalidateMode.onUserInteraction,
-                validator: (value) => value != null && value.length < 6
-                    ? 'Enter min 6 characters'
-                    : null,
-                onFieldSubmitted: (_) {
-                  _formKey.currentState!.validate();
-                  _formKey.currentState!.save();
-                },
-              ),
-              const SizedBox(height: 5),
-              ElevatedButton.icon(
-                  style: ElevatedButton.styleFrom(
-                      minimumSize: const Size.fromHeight(50)),
-                  onPressed: () {
-                    if (_formKey.currentState!.validate()) {
-                      _formKey.currentState!.save();
-                      registerNewUser(
-                          emailController.text.trim(),
-                          passwordController.text.trim(),
-                          confirmPassController.text.trim(),
-                          displayNameController.text.trim(),
-                          _selectedYourPost,
-                          _selectedYourRoute,
-                          _selectedCountryCode + phoneController.text.trim());
-                      // Submit form data here...
-                    }
+                  autovalidateMode: AutovalidateMode.onUserInteraction,
+                  validator: (value) => value != null && value.length < 2
+                      ? 'Please enter a valid name'
+                      : null,
+                  onFieldSubmitted: (value) {
+                    FocusScope.of(context).unfocus();
+                    _formKey.currentState!.save();
                   },
-                  icon: const Icon(
-                    Icons.lock_open,
-                    size: 32,
-                  ),
-                  label: const Text(
-                    'Register',
-                    style: TextStyle(fontSize: 24),
-                  )),
-              const SizedBox(height: 24),
-              GestureDetector(
-                child: Text(
-                  'Back to Login',
-                  style: TextStyle(
-                      decoration: TextDecoration.underline,
-                      color: Theme.of(context).colorScheme.secondary,
-                      fontSize: 20),
                 ),
-                onTap: () {
-                  Navigator.of(context)
-                      .pushReplacement(
-                    MaterialPageRoute(
-                      builder: (context) => const LoginWidget(),
+                const SizedBox(height: 5),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Expanded(
+                      child: Text('Select Post:'),
+                      flex: 2,
                     ),
-                  )
-                      .then((_) {
-                    Navigator.of(context).popUntil((route) => route.isFirst);
-                  });
-                },
-              ),
-            ],
+                    Expanded(
+                      flex: 3,
+                      child: (_selectedYourPost.isNotEmpty)
+                          ? DropdownButton(
+                              value: _selectedYourPost,
+                              items: userPosts.map((country) {
+                                return DropdownMenuItem(
+                                  value: country,
+                                  child: Text(country),
+                                );
+                              }).toList(),
+                              onChanged: (value) {
+                                setState(() {
+                                  _selectedYourPost = value!;
+                                });
+                              },
+                            )
+                          : Text('Loading...'),
+                    ),
+                  ],
+                ),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Expanded(
+                      child: Text('Select Route:'),
+                      flex: 2,
+                    ),
+                    Expanded(
+                      flex: 3,
+                      child: (_selectedYourRoute.isNotEmpty)
+                          ? DropdownButton(
+                              value: _selectedYourRoute,
+                              items: userRoute.map((country) {
+                                return DropdownMenuItem(
+                                  value: country,
+                                  child: Text(country),
+                                );
+                              }).toList(),
+                              onChanged: (value) {
+                                setState(() {
+                                  _selectedYourRoute = value!;
+                                });
+                              },
+                            )
+                          : Text('Loading...'),
+                    ),
+                  ],
+                ),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Expanded(
+                      child: Text('Select country:'),
+                      flex: 2,
+                    ),
+                    Expanded(
+                      flex: 3,
+                      child: DropdownButton(
+                        value: _selectedCountryName,
+                        items: uniquelist.map((country) {
+                          return DropdownMenuItem(
+                            value: country,
+                            child: Text(country),
+                          );
+                        }).toList(),
+                        onChanged: (value) {
+                          setState(() {
+                            _selectedCountryCode = _countries[value]!;
+                            _selectedCountryName = value!;
+                          });
+                        },
+                      ),
+                    ),
+                  ],
+                ),
+                TextFormField(
+                  controller: phoneController,
+                  textInputAction: TextInputAction.next,
+                  keyboardType: TextInputType.phone,
+                  cursorColor: loginIconColor,
+                  style: TextStyle(color: loginIconColor.withOpacity(0.9)),
+                  decoration: InputDecoration(
+                    prefixIcon:const Icon(Icons.call,color: loginIconColor,),
+                    labelText: 'Enter phone number',
+                    hintText: 'Enter phone number',
+                    prefixText: _selectedCountryCode,
+                    labelStyle: TextStyle(color: loginIconColor.withOpacity(0.9)),
+                    filled: true,
+                    floatingLabelBehavior: FloatingLabelBehavior.never,
+                    fillColor: loginIconColor.withOpacity(0.3),
+                    border: OutlineInputBorder(borderRadius: BorderRadius.circular(30.0),
+                        borderSide: const BorderSide(width: 0,style: BorderStyle.none)),
+                  ),
+                  autovalidateMode: AutovalidateMode.onUserInteraction,
+                  validator: (value) => !isValidPhoneNumber(value)
+                      ? "Enter Correct phone number"
+                      : null,
+                  onFieldSubmitted: (value) {
+                    FocusScope.of(context).unfocus();
+                    _formKey.currentState!.save();
+                  },
+                ),
+                const SizedBox(height: 5),
+                TextFormField(
+                  controller: emailController,
+                  textInputAction: TextInputAction.next,
+                  cursorColor: loginIconColor,
+                  style: TextStyle(color: loginIconColor.withOpacity(0.9)),
+                  decoration:
+                       InputDecoration(
+                         prefixIcon:const Icon(Icons.mail_outline_outlined,color: loginIconColor,),
+                          labelText: 'Enter your email',
+                        labelStyle: TextStyle(color: loginIconColor.withOpacity(0.9)),
+                        filled: true,
+                        floatingLabelBehavior: FloatingLabelBehavior.never,
+                        fillColor: loginIconColor.withOpacity(0.3),
+                        border: OutlineInputBorder(borderRadius: BorderRadius.circular(30.0),
+                            borderSide: const BorderSide(width: 0,style: BorderStyle.none)),
+                      ),
+                  autovalidateMode: AutovalidateMode.onUserInteraction,
+                  validator: (email) =>
+                      email != null && !EmailValidator.validate(email)
+                          ? 'Enter a valid email'
+                          : null,
+                  onFieldSubmitted: (value) {
+                    FocusScope.of(context).unfocus();
+                    _formKey.currentState!.save();
+                  },
+                ),
+                const SizedBox(height: 5),
+                TextFormField(
+                  controller: passwordController,
+                  textInputAction: TextInputAction.next,
+                  cursorColor: loginIconColor,
+                  style: TextStyle(color: loginIconColor.withOpacity(0.9)),
+                  decoration:
+                       InputDecoration(
+                          prefixIcon:const Icon(Icons.lock_outline_rounded,color: loginIconColor,),
+                          labelText: 'Enter your Password',
+                         labelStyle: TextStyle(color: loginIconColor.withOpacity(0.9)),
+                         filled: true,
+                         floatingLabelBehavior: FloatingLabelBehavior.never,
+                         fillColor: loginIconColor.withOpacity(0.3),
+                         border: OutlineInputBorder(borderRadius: BorderRadius.circular(30.0),
+                             borderSide: const BorderSide(width: 0,style: BorderStyle.none)),
+                       ),
+                  obscureText: true,
+                  autovalidateMode: AutovalidateMode.onUserInteraction,
+                  validator: (value) => value != null && value.length < 6
+                      ? 'Enter min 6 characters'
+                      : null,
+                  onFieldSubmitted: (_) {
+                    FocusScope.of(context).unfocus();
+                    _formKey.currentState!.save();
+                  },
+                ),
+                const SizedBox(height: 5),
+                TextFormField(
+                  controller: confirmPassController,
+                  textInputAction: TextInputAction.next,
+                  cursorColor: loginIconColor,
+                  style: TextStyle(color: loginIconColor.withOpacity(0.9)),
+                  decoration:
+                  InputDecoration(
+                    prefixIcon:const Icon(Icons.lock_outline_rounded,color: loginIconColor,),
+                    labelText: 'Confirm your Password',
+                    labelStyle: TextStyle(color: loginIconColor.withOpacity(0.9)),
+                    filled: true,
+                    floatingLabelBehavior: FloatingLabelBehavior.never,
+                    fillColor: loginIconColor.withOpacity(0.3),
+                    border: OutlineInputBorder(borderRadius: BorderRadius.circular(30.0),
+                        borderSide: const BorderSide(width: 0,style: BorderStyle.none)),
+                  ),
+                  obscureText: true,
+                  autovalidateMode: AutovalidateMode.onUserInteraction,
+                  validator: (value) => value != null && value.length < 6
+                      ? 'Enter min 6 characters'
+                      : null,
+                  onFieldSubmitted: (_) {
+                    _formKey.currentState!.validate();
+                    _formKey.currentState!.save();
+                  },
+                ),
+                const SizedBox(height: 5),
+                ElevatedButton.icon(
+                    style: ElevatedButton.styleFrom(
+                        minimumSize: const Size.fromHeight(50),
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(30)),
+                    backgroundColor: loginButtonColor,
+                    ),
+                    onPressed: () {
+                      if (_formKey.currentState!.validate()) {
+                        _formKey.currentState!.save();
+                        registerNewUser(
+                            emailController.text.trim(),
+                            passwordController.text.trim(),
+                            confirmPassController.text.trim(),
+                            displayNameController.text.trim(),
+                            _selectedYourPost,
+                            _selectedYourRoute,
+                            _selectedCountryCode + phoneController.text.trim());
+                        // Submit form data here...
+                      }
+                    },
+                    icon: const Icon(Icons.lock_open, size: 32,color: loginColor1,),
+                    label: const Text(
+                      'Register',
+                      style: TextStyle(fontSize: 24,color: loginColor1),
+                    )),
+                const SizedBox(height: 24),
+                GestureDetector(
+                  child: const Text(
+                    'Back to Login',
+                    style: TextStyle(
+                        color: loginIconColor,
+                        fontSize: 20
+                    ),
+                  ),
+                  onTap: () {
+                    Navigator.of(context)
+                        .pushReplacement(
+                      MaterialPageRoute(
+                        builder: (context) => const LoginWidget(),
+                      ),
+                    )
+                        .then((_) {
+                      Navigator.of(context).popUntil((route) => route.isFirst);
+                    });
+                  },
+                ),
+              ],
+            ),
           ),
         ),
       ),
