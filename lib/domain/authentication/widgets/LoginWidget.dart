@@ -53,17 +53,14 @@ class _LoginWidgetState extends State<LoginWidget> {
                   TextFormField(
                     controller: emailController,
                     textInputAction: TextInputAction.next,
-                    cursorColor: loginIconColor,
-                    style: TextStyle(color: loginIconColor.withOpacity(0.9)),
+                    cursorColor: loginButtonColor,
+                    style: TextStyle(color: loginTextColor.withOpacity(0.9)),
                     decoration: InputDecoration(
                       prefixIcon:const Icon(Icons.person_outline,color: loginIconColor,),
                         labelText: 'Enter your email',
-                      labelStyle: TextStyle(color: loginIconColor.withOpacity(0.9)),
-                      filled: true,
-                      floatingLabelBehavior: FloatingLabelBehavior.never,
-                      fillColor: loginIconColor.withOpacity(0.3),
+                      labelStyle: TextStyle(color: loginTextColor.withOpacity(0.9)),
                       border: OutlineInputBorder(borderRadius: BorderRadius.circular(30.0),
-                      borderSide: const BorderSide(width: 0,style: BorderStyle.none)),
+                      borderSide: const BorderSide(width: 0,style: BorderStyle.solid,color: loginIconColor)),
                     ),
                     autovalidateMode: AutovalidateMode.onUserInteraction,
                     validator: (email) => email != null && !EmailValidator.validate(email)? 'Enter a valid email':null,
@@ -76,17 +73,14 @@ class _LoginWidgetState extends State<LoginWidget> {
                   TextFormField(
                     controller: passwordController,
                     textInputAction: TextInputAction.next,
-                    cursorColor: loginIconColor,
-                    style: TextStyle(color: loginIconColor.withOpacity(0.9)),
+                    cursorColor: loginButtonColor,
+                    style: TextStyle(color: loginTextColor.withOpacity(0.9)),
                     decoration: InputDecoration(
-                      prefixIcon:const Icon(Icons.lock,color: loginIconColor,),
-                        labelText: 'Enter your Password',
-                      labelStyle: TextStyle(color: loginIconColor.withOpacity(0.9)),
-                      filled: true,
-                      floatingLabelBehavior: FloatingLabelBehavior.never,
-                      fillColor: loginIconColor.withOpacity(0.3),
+                      prefixIcon:const Icon(Icons.lock_outlined,color: loginIconColor,),
+                      labelText: 'Enter your Password',
+                      labelStyle: TextStyle(color: loginTextColor.withOpacity(0.9)),
                       border: OutlineInputBorder(borderRadius: BorderRadius.circular(30.0),
-                          borderSide: const BorderSide(width: 0,style: BorderStyle.none)),
+                          borderSide: const BorderSide(width: 0.25,style: BorderStyle.solid,color: loginIconColor)),
                     ),
                     obscureText: true,
                     autovalidateMode: AutovalidateMode.onUserInteraction,
@@ -132,16 +126,16 @@ class _LoginWidgetState extends State<LoginWidget> {
                           // Submit form data here...
                         }
                       },
-                      icon: const Icon(Icons.lock_open, size: 32,color: loginColor1,),
+                      icon: const Icon(Icons.lock_open, size: 32,color: loginButtonTextColor,),
                       label: const Text(
                         'Sign In',
-                        style: TextStyle(fontSize: 24,color: loginColor1),
+                        style: TextStyle(fontSize: 24,color: loginButtonTextColor),
                       )
                   ),
                   const SizedBox(height: 24),
                   GestureDetector(
                     child: const Text(
-                      'Register ? New User',
+                      'Register? New User',
                       style: TextStyle(
                           color: loginIconColor,
                           fontSize: 20
