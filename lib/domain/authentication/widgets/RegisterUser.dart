@@ -111,6 +111,9 @@ class _RegisterUserState extends State<RegisterUser> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      appBar: AppBar(
+
+      ),
       body: Form(
         key: _formKey,
         child: Container(
@@ -159,7 +162,9 @@ class _RegisterUserState extends State<RegisterUser> {
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
                     Expanded(
-                      child: Text('Select Post:'),
+                      child: Text('Select Post:',
+                        style: TextStyle(color: loginIconColor),
+                      ),
                       flex: 2,
                     ),
                     Expanded(
@@ -179,7 +184,7 @@ class _RegisterUserState extends State<RegisterUser> {
                                 });
                               },
                             )
-                          : Text('Loading...'),
+                          : Text('Loading...',style: TextStyle(color: loginIconColor),),
                     ),
                   ],
                 ),
@@ -187,7 +192,7 @@ class _RegisterUserState extends State<RegisterUser> {
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
                     Expanded(
-                      child: Text('Select Route:'),
+                      child: Text('Select Route:',style: TextStyle(color: loginIconColor),),
                       flex: 2,
                     ),
                     Expanded(
@@ -207,7 +212,7 @@ class _RegisterUserState extends State<RegisterUser> {
                                 });
                               },
                             )
-                          : Text('Loading...'),
+                          : Text('Loading...',style: TextStyle(color: loginIconColor),),
                     ),
                   ],
                 ),
@@ -215,7 +220,7 @@ class _RegisterUserState extends State<RegisterUser> {
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
                     Expanded(
-                      child: Text('Select country:'),
+                      child: Text('Select country:',style: TextStyle(color: loginIconColor),),
                       flex: 2,
                     ),
                     Expanded(
@@ -225,7 +230,7 @@ class _RegisterUserState extends State<RegisterUser> {
                         items: uniquelist.map((country) {
                           return DropdownMenuItem(
                             value: country,
-                            child: Text(country),
+                            child: Text(country,style: const TextStyle(color: loginIconColor),),
                           );
                         }).toList(),
                         onChanged: (value) {
