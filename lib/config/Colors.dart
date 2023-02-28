@@ -8,6 +8,11 @@ const Color mapSliderThumbColor = Color(0xFC4336FF);
 const Color mapSliderActiveColor = Color(0xFC4336FF);
 const Color mapSliderInActiveColor = Color(0xFFF7F7FA);
 
+const Color loginColor1 = Color(0xFFCB2B93);
+const Color loginColor2 = Color(0xFF9546C4);
+const Color loginColor3 = Color(0xFF5E61F4);
+
+
 int bnBarColor = 200;
 int deepColor = 800;
 int navlen = 4;

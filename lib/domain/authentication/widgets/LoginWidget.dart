@@ -28,10 +28,6 @@ class _LoginWidgetState extends State<LoginWidget> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Form'),
-        backgroundColor: Colors.orange,
-      ),
       body: Form(
         key: _formKey,
         child: SingleChildScrollView(
