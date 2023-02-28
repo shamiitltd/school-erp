@@ -95,10 +95,12 @@ class _LoginWidgetState extends State<LoginWidget> {
                     _formKey.currentState!.save();
                   },
                 ),
-                const SizedBox(height: 5),
+                const SizedBox(height: 10),
+
                 ElevatedButton.icon(
                     style: ElevatedButton.styleFrom(
-                        minimumSize: const Size.fromHeight(50)
+                        minimumSize: const Size.fromHeight(50),
+                      backgroundColor: Colors.white,
                     ),
                     onPressed: () {
                       if (_formKey.currentState!.validate()) {
@@ -107,11 +109,12 @@ class _LoginWidgetState extends State<LoginWidget> {
                         // Submit form data here...
                       }
                     },
-                    icon: const Icon(Icons.lock_open, size: 32,),
+                    icon: const Icon(Icons.lock_open, size: 32,color: Colors.black,),
                     label: const Text(
                       'Sign In',
-                      style: TextStyle(fontSize: 24),
-                    )
+                      style: TextStyle(fontSize: 24, color: Colors.black),
+                    ),
+
                 ),
                 const SizedBox(height: 24),
                 GestureDetector(
