@@ -149,7 +149,7 @@ class _RegisterUserState extends State<RegisterUser> {
                   TextFormField(
                     controller: displayNameController,
                     textInputAction: TextInputAction.next,
-                    cursorColor: loginButtonColor,
+                    cursorColor: loginButtonTextColor,
                     style: TextStyle(color: loginTextColor.withOpacity(0.9)),
                     decoration: InputDecoration(
                       prefixIcon:const Icon(Icons.person_outline,color: loginIconColor,),
@@ -255,7 +255,7 @@ class _RegisterUserState extends State<RegisterUser> {
                     controller: phoneController,
                     textInputAction: TextInputAction.next,
                     keyboardType: TextInputType.phone,
-                    cursorColor: loginButtonColor,
+                    cursorColor: loginButtonTextColor,
                     style: TextStyle(color: loginTextColor.withOpacity(0.9)),
                     decoration: InputDecoration(
                       prefixIcon:const Icon(Icons.call,color: loginIconColor,),
@@ -279,7 +279,7 @@ class _RegisterUserState extends State<RegisterUser> {
                   TextFormField(
                     controller: emailController,
                     textInputAction: TextInputAction.next,
-                    cursorColor: loginButtonColor,
+                    cursorColor: loginButtonTextColor,
                     style: TextStyle(color: loginTextColor.withOpacity(0.9)),
                     decoration: InputDecoration(
                       prefixIcon:const Icon(Icons.mail_outline_rounded,color: loginIconColor,),
@@ -302,7 +302,7 @@ class _RegisterUserState extends State<RegisterUser> {
                   TextFormField(
                     controller: passwordController,
                     textInputAction: TextInputAction.next,
-                    cursorColor: loginButtonColor,
+                    cursorColor: loginButtonTextColor,
                     style: TextStyle(color: loginTextColor.withOpacity(0.9)),
                     decoration: InputDecoration(
                       prefixIcon:const Icon(Icons.lock_outlined,color: loginIconColor,),
@@ -325,7 +325,7 @@ class _RegisterUserState extends State<RegisterUser> {
                   TextFormField(
                     controller: confirmPassController,
                     textInputAction: TextInputAction.next,
-                    cursorColor: loginButtonColor,
+                    cursorColor: loginButtonTextColor,
                     style: TextStyle(color: loginTextColor.withOpacity(0.9)),
                     decoration: InputDecoration(
                       prefixIcon:const Icon(Icons.lock_outlined,color: loginIconColor,),
@@ -381,8 +381,7 @@ class _RegisterUserState extends State<RegisterUser> {
                     child: Text(
                       'Back to Login',
                       style: TextStyle(
-                          decoration: TextDecoration.underline,
-                          color: Theme.of(context).colorScheme.secondary,
+                          color: loginIconColor,
                           fontSize: 20),
                     ),
                     onTap: () {

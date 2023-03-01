@@ -53,7 +53,7 @@ class _LoginWidgetState extends State<LoginWidget> {
                   TextFormField(
                     controller: emailController,
                     textInputAction: TextInputAction.next,
-                    cursorColor: loginButtonColor,
+                    cursorColor: loginButtonTextColor,
                     style: TextStyle(color: loginTextColor.withOpacity(0.9)),
                     decoration: InputDecoration(
                       prefixIcon:const Icon(Icons.person_outline,color: loginIconColor,),
@@ -73,7 +73,7 @@ class _LoginWidgetState extends State<LoginWidget> {
                   TextFormField(
                     controller: passwordController,
                     textInputAction: TextInputAction.next,
-                    cursorColor: loginButtonColor,
+                    cursorColor: loginButtonTextColor,
                     style: TextStyle(color: loginTextColor.withOpacity(0.9)),
                     decoration: InputDecoration(
                       prefixIcon:const Icon(Icons.lock_outlined,color: loginIconColor,),
