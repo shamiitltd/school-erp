@@ -16,6 +16,8 @@ import 'package:school_erp/pages/profile.dart';
 import 'package:school_erp/res/assets_res.dart';
 import 'package:school_erp/shared/functions/Computational.dart';
 
+import '../domain/Visitors/normalVisitor.dart';
+
 class MyHomePage extends StatefulWidget {
   const MyHomePage({super.key, required this.title});
   final String title;
@@ -75,6 +77,8 @@ class _MyHomePageState extends State<MyHomePage> {
       container = ProfileActivity();
     } else if (currentPage == DrawerSections.logout) {
       FirebaseAuth.instance.signOut();
+    } else if (currentPage == DrawerSections.visitors) {
+      container = NormalVisitor();
     }else{
       container = const Text('Empty');
     }
@@ -122,6 +126,8 @@ class _MyHomePageState extends State<MyHomePage> {
           Divider(),
           menuItem(8, "Logout", Icons.logout,
               currentPage == DrawerSections.logout ? true : false),
+          menuItem(9, "Visitors", Icons.wallet_travel,
+              currentPage == DrawerSections.visitors ? true : false),
         ],
       ),
     );
@@ -164,6 +170,8 @@ class _MyHomePageState extends State<MyHomePage> {
                 currentPage = DrawerSections.send_feedback;
               } else if (id == 8) {
                 currentPage = DrawerSections.logout;
+              } else if (id == 9) {
+                currentPage = DrawerSections.visitors;
               }
             });
           }

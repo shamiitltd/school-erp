@@ -50,6 +50,7 @@ dependencies:
   flutter_compass: ^0.7.0
   motion_sensors: ^0.1.0
   flutter_map: ^3.1.0
+  camera: ^0.10.0+1
 
 
 
