@@ -141,7 +141,7 @@ class _RegisterUserState extends State<RegisterUser> {
           ),
           child: SingleChildScrollView(
             child: Padding(
-              padding:  EdgeInsets.fromLTRB(16, MediaQuery.of(context).size.height*0.01102, 16, 0),
+              padding:  EdgeInsets.fromLTRB(16, MediaQuery.of(context).size.height*0.00002, 16, 30),
               child: Column(
                 children: <Widget>[
                   const SizedBox(height: 30),
@@ -172,7 +172,7 @@ class _RegisterUserState extends State<RegisterUser> {
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
                       Expanded(
-                        child: Text('Select Post:'),
+                        child: Text('Select Role:'),
                         flex: 2,
                       ),
                       Expanded(
