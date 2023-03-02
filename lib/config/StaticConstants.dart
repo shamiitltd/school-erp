@@ -10,7 +10,7 @@ double speedFont = 15.0;
 double speedBias = 3.611111111111;//to convert m/s to km/h
 
 String packageName = 'com.shamiit.school_erp';
-int directionApiDelay = 30;
+int directionApiDelay = 5;
 
 const String busIconAsset = AssetsRes.BUS;
 const String busOffIconAsset = AssetsRes.BUSOFF;

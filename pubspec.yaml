@@ -33,19 +33,20 @@ dependencies:
     sdk: flutter
 
   cupertino_icons: ^1.0.2
-  firebase_core: ^2.4.1
-  firebase_database: ^10.0.9
-  firebase_auth: ^4.2.5
+  firebase_core: ^2.7.0
+  firebase_database: ^10.0.14
+  firebase_auth: ^4.2.9
   flutter_polyline_points: ^1.0.0
-  google_maps_flutter: ^2.2.3
+  google_maps_flutter: ^2.2.4
+  google_maps_flutter_android: ^2.4.6
   location: ^4.4.0
   latlong2: ^0.8.1
-  flutter_svg: 2.0.1
-  dio: 5.0.0
+  flutter_svg: ^2.0.2
+  dio: ^5.0.1
   email_validator: ^2.1.17
   http: ^0.13.5
-  url_launcher: ^6.1.9
-  shared_preferences: ^2.0.17
+  url_launcher: ^6.1.10
+  shared_preferences: ^2.0.18
   lite_rolling_switch: ^1.0.0
   flutter_compass: ^0.7.0
   motion_sensors: ^0.1.0

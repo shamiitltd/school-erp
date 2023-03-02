@@ -18,6 +18,9 @@ class CustomFloatingButton extends StatefulWidget {
 class _CustomFloatingButtonState extends State<CustomFloatingButton> {
   late String selectedUid;
   late double maxZoom;
+  var firbaseClass = MapFirebase();
+
+
   Future<void> setValues() async {
     selectedUid = widget.selectedUid;
     maxZoom = widget.maxZoom;
@@ -132,7 +135,7 @@ class _CustomFloatingButtonState extends State<CustomFloatingButton> {
                           onPressed: () {
                             focusMe = !focusMe;
                             focusDest = false;
-                            getCurrentLocation();
+                            getCurrentLocation(firbaseClass);
                             setState(() {});
                           },
                           tooltip: 'Focus Me',

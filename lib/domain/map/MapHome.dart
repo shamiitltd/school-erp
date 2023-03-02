@@ -13,6 +13,7 @@ import 'package:http/http.dart' as http;
 import 'package:school_erp/config/Colors.dart';
 import 'package:school_erp/config/DynamicConstants.dart';
 import 'package:school_erp/config/StaticConstants.dart';
+import 'package:school_erp/domain/map/config/constants.dart';
 import 'package:school_erp/domain/map/functions/Computational.dart';
 import 'package:school_erp/domain/map/functions/DirectionsRepository.dart';
 import 'package:school_erp/domain/map/functions/RealTimeDb.dart';
@@ -34,6 +35,7 @@ class MapHomePage extends StatefulWidget {
 
 class MapHomePageState extends State<MapHomePage> {
   BitmapDescriptor myLocationMaker = BitmapDescriptor.defaultMarker;
+  final databaseReference = FirebaseDatabase.instance.ref();
   late GoogleMapController googleMapController;
   final Completer<GoogleMapController> _controller = Completer();
   var firbaseClass = MapFirebase();
@@ -44,7 +46,9 @@ class MapHomePageState extends State<MapHomePage> {
   late LatLng mapCameraLocation;
   LocationData? currentLocationData;
   LocationData? currentLocationDataOld;
-  late StreamSubscription _firebaseSubscription;
+  late StreamSubscription _firebaseSubscriptionMe;
+  late StreamSubscription _firebaseSubscriptionBus;
+  late StreamSubscription _firebaseSubscriptionUserBus;
   List<LatLng> polylineCoordinates = [];
   late Directions _info;
   bool infoUpdate = false;
@@ -59,10 +63,24 @@ class MapHomePageState extends State<MapHomePage> {
   String _selectedRoute = '';
   bool _mounted = true;
   final Vector3 _orientation = Vector3.zero();
+  bool isLocationReady = true;
+  bool isPolylineReady = false;
+  bool isRouteLoaded = true;
+  bool isUserBus = false;
+
+  void setUp() async {
+    getMyInfo();
+    getCurrentLocation();
+    startSensors();
+    zoomMap = await getZoomLevel(); //from sharedPrefs
+    focusMe = true;
+    if (_mounted) {
+      setState(() {});
+    }
+  }
 
   void loadRouteInfo() async {
     List<String> routeList = [];
-    final databaseReference = FirebaseDatabase.instance.ref();
     databaseReference.child("routes").onValue.listen((DatabaseEvent event) {
       Map<dynamic, dynamic> data =
           event.snapshot.value as Map<dynamic, dynamic>;
@@ -72,8 +90,81 @@ class MapHomePageState extends State<MapHomePage> {
       if (_mounted) {
         setState(() {
           userRoute = routeList;
-          _selectedRoute = userRoute[0];
         });
+      }
+    });
+  }
+
+  Future getMyInfo() async {
+    DatabaseReference starCountRef =
+        FirebaseDatabase.instance.ref('users/${user?.uid}');
+    _firebaseSubscriptionMe =
+        starCountRef.onValue.listen((DatabaseEvent event) {
+      currentUserdata = event.snapshot.value as Map<dynamic, dynamic>;
+      myCategory = currentUserdata['post'] == 'Driver' ? 'buses' : 'users';
+      myRoute = currentUserdata['route'];
+      currentUserdata['post'] == 'Driver'
+          ? getBusAndUsersInfoByRootId(myRoute)
+          : getBusInfoByRootId(myRoute);
+      if (currentUserdata['routeAccess'] == true && isRouteLoaded == true) {
+        isRouteLoaded = false;
+        loadRouteInfo();
+      }
+
+      if (_mounted) {
+        getLocationIcon();
+        setState(() {});
+      }
+    });
+  }
+
+  Future getBusAndUsersInfoByRootId(String route) async {
+    isUserBus = true;
+    DatabaseReference starCountRef =
+        FirebaseDatabase.instance.ref().child("routesAll/$route");
+    _firebaseSubscriptionUserBus =
+        starCountRef.onValue.listen((DatabaseEvent event) {
+      allUserCompleteData = {};
+      if (event.snapshot.value == null) return;
+      Map<dynamic, dynamic> data =
+          event.snapshot.value as Map<dynamic, dynamic>;
+      if (data["buses"] != null) {
+        data["buses"].forEach((key, value) {
+          if (key != user?.uid) {
+            value['icon'] = "bus";
+            allUserCompleteData.add({key: value});
+          }
+        });
+      }
+      if (data["users"] != null) {
+        data["users"].forEach((key, value) {
+          value['icon'] = "person";
+          allUserCompleteData.add({key: value});
+        });
+      }
+      if (_mounted) {
+        getLocationIcon();
+        setState(() {});
+      }
+    });
+  }
+
+  Future getBusInfoByRootId(String route) async {
+    DatabaseReference starCountRef =
+        FirebaseDatabase.instance.ref().child("routesAll/$route/buses");
+    _firebaseSubscriptionBus =
+        starCountRef.onValue.listen((DatabaseEvent event) {
+      allUserCompleteData = {};
+      if (event.snapshot.value == null) return;
+      Map<dynamic, dynamic> data =
+          event.snapshot.value as Map<dynamic, dynamic>;
+      data.forEach((key, value) {
+        value['icon'] = "bus";
+        allUserCompleteData.add({key: value});
+      });
+      if (_mounted) {
+        getLocationIcon();
+        setState(() {});
       }
     });
   }
@@ -82,22 +173,11 @@ class MapHomePageState extends State<MapHomePage> {
   void initState() {
     super.initState();
     WidgetsFlutterBinding.ensureInitialized();
-    loadRouteInfo();
-    getCoordinatesByRootId();
     final user = this.user;
     if (user != null) {
       currentUid = user.uid;
     }
     setUp();
-  }
-
-  void setUp() async {
-    getCurrentLocation();
-    zoomMap = await getZoomLevel(); //from sharedPrefs
-    focusMe=true;
-    if (_mounted) {
-      setState(() {});
-    }
   }
 
   Future<void> firstDistanceLoaded(double newDistance) async {
@@ -111,31 +191,12 @@ class MapHomePageState extends State<MapHomePage> {
 
   @override
   void dispose() {
-    _firebaseSubscription.cancel();
     _mounted = false;
+    _firebaseSubscriptionMe.cancel();
+    isUserBus
+        ? _firebaseSubscriptionUserBus.cancel()
+        : _firebaseSubscriptionBus.cancel();
     super.dispose();
-  }
-
-  Future getCoordinatesByRootId() async {
-    DatabaseReference starCountRef = FirebaseDatabase.instance.ref('users');
-    _firebaseSubscription = starCountRef.onValue.listen((DatabaseEvent event) {
-      Map<dynamic, dynamic> data =
-          event.snapshot.value as Map<dynamic, dynamic>;
-      allUserCompleteData = {};
-      data.forEach((key, value) {
-        if (value['route'] == data[user?.uid]['route']) {
-          if (key == currentUid) {
-            currentUserdata = value;
-          } else if (value['trackMe'] == true) {
-            allUserCompleteData.add({key: value});
-          }
-        }
-      });
-      getLocationIcon();
-      if (_mounted) {
-        setState(() {});
-      }
-    });
   }
 
   Future<void> getLocationIcon() async {
@@ -185,14 +246,17 @@ class MapHomePageState extends State<MapHomePage> {
     location.onLocationChanged.listen((newLocation) async {
       currentLocationData = newLocation;
       speed = ((currentLocationData?.speed ?? 0) * speedBias).toInt();
-      firbaseClass.setMyCoordinates(currentLocationData!.latitude!.toString(),
-          currentLocationData!.longitude!.toString(), bearingMap);
+      firbaseClass.setMyCoordinatesOptimized(
+          currentLocationData!.latitude!.toString(),
+          currentLocationData!.longitude!.toString(),
+          bearingMap);
       myLocation = LatLng(setPrecision(currentLocationData!.latitude!, 3),
           setPrecision(currentLocationData!.longitude!, 3));
       currentLocationDataOld =
           await updateDistanceTravelled(currentLocationData);
       if (_mounted) {
-        updateMapOnChange();
+        updateMakers();
+        mapCameraController();
         setState(() {});
       }
     });
@@ -215,8 +279,7 @@ class MapHomePageState extends State<MapHomePage> {
     return currentLocationData; //now this will became old data.
   }
 
-  void updateMapOnChange() {
-    updateCoordinates();
+  void startSensors() {
     FlutterCompass.events?.listen((event) {
       if (_mounted) {
         setState(() {
@@ -236,7 +299,6 @@ class MapHomePageState extends State<MapHomePage> {
         });
       }
     });
-    mapCameraController();
   }
 
   Future<void> mapCameraController() async {
@@ -282,15 +344,45 @@ class MapHomePageState extends State<MapHomePage> {
     }
   }
 
-  void updateCoordinates() async {
-    if (selectedUid.isNotEmpty) {
+  Future showSelectedUserInfoPopup(String Uid) async {
+    DatabaseReference starCountRef =
+    FirebaseDatabase.instance.ref('users/$Uid');
+    starCountRef.onValue.listen((DatabaseEvent event) {
+      selectedUserdata = event.snapshot.value as Map<dynamic, dynamic>;
+      showDialog(
+        context: context,
+        builder: (BuildContext context) {
+          return AlertDialog(
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(16.0),
+              ),
+              title: Text(
+                  '${selectedUserdata['post']}: ${selectedUserdata['name']}'),
+              content: InkWell(
+                onTap: () {
+                  PopupSnackBar().makePhoneCall(selectedUserdata['phone']);
+                },
+                child: Text(
+                  'Call: ${selectedUserdata['phone']}',
+                  style: const TextStyle(
+                    fontSize: 16.0,
+                    color: Colors.blue,
+                  ),
+                ),
+              ));
+        },
+      );
+    });
+  }
+
+  void updateMakers() async {
+    if (selectedUid.isNotEmpty && allUserCompleteData.isNotEmpty) {
       var val = allUserCompleteData
           .firstWhere((element) => element.containsKey(selectedUid));
-      selectedUserdata = val[selectedUid];
-      destination = LatLng(double.parse(selectedUserdata['latitude']),
-          double.parse(selectedUserdata['longitude']));
+      destination = LatLng(double.parse(val[selectedUid]['latitude']),
+          double.parse(val[selectedUid]['longitude']));
     }
-
+    markers = {};
     markers.add(
       Marker(
         rotation: bearingMap,
@@ -317,7 +409,7 @@ class MapHomePageState extends State<MapHomePage> {
           String busIconDynamic =
               tiltMap > tiltMapThreshold ? busIconAsset : busTopIconAsset;
           await BitmapDescriptor.fromAssetImage(ImageConfiguration.empty,
-                  value['post'] == 'Driver' ? busIconDynamic : personIconAsset)
+                  value['icon'] == 'bus' ? busIconDynamic : personIconAsset)
               .then((value) => locationMaker = value);
         }
 
@@ -328,17 +420,11 @@ class MapHomePageState extends State<MapHomePage> {
             rotation: netDirection,
             onTap: () {
               selectedUid = key;
-              selectedUserdata = value;
               destination = LatLng(double.parse(value['latitude']),
                   double.parse(value['longitude']));
               getPolyPoints();
+              showSelectedUserInfoPopup(selectedUid);
             },
-            infoWindow: InfoWindow(
-                title: '${value['post']}: ${value['name']}',
-                snippet: 'Call: ${value['phone']}',
-                onTap: () {
-                  PopupSnackBar().makePhoneCall(value['phone']);
-                }),
             icon: locationMaker,
             markerId: MarkerId(key),
             position: LatLng(double.parse(value['latitude']),
@@ -358,6 +444,7 @@ class MapHomePageState extends State<MapHomePage> {
       setState(() {
         _selectedRoute = currentUserdata['route'];
         iconVisible = currentUserdata['trackMe'];
+        myRoute = _selectedRoute;
       });
     }
 
@@ -370,7 +457,8 @@ class MapHomePageState extends State<MapHomePage> {
             const Expanded(
               flex: 2,
               child: Text(
-                'R:',textAlign: TextAlign.start,
+                'R:',
+                textAlign: TextAlign.start,
                 style: TextStyle(color: Colors.black, fontSize: 20.0),
               ),
             ),
@@ -387,27 +475,33 @@ class MapHomePageState extends State<MapHomePage> {
                             );
                           }).toList(),
                           onChanged: (value) async {
+                            myOldRoute = _selectedRoute;
                             _selectedRoute = value ?? '';
                             markers = {};
-                            selectedUid='';
-                            infoUpdate=false;
-                            polylineCoordinates=[];
+                            selectedUid = '';
+                            infoUpdate = false;
+                            polylineCoordinates = [];
+                            myRoute = _selectedRoute;
                             if (_mounted) setState(() {});
-                            await firbaseClass.setRoute(_selectedRoute);
+                            await firbaseClass
+                                .setRouteOptimized(_selectedRoute);
                             getLocationIcon();
+                            updateMakers();
                           },
                         )
                       : Text(
-                          currentUserdata['route'] ?? 'Loading..',textAlign: TextAlign.start,
+                          currentUserdata['route'] ?? 'Loading..',
+                          textAlign: TextAlign.start,
                           style: const TextStyle(
                               color: Colors.black, fontSize: 20.0),
                         ))
-                  : const Text('Loading..',textAlign: TextAlign.start),
+                  : const Text('Loading..', textAlign: TextAlign.start),
             ),
             Expanded(
               flex: 5,
               child: Text(
-                '${distanceTravelled.toStringAsFixed(2)}Km',textAlign: TextAlign.start,
+                '${distanceTravelled.toStringAsFixed(2)}Km',
+                textAlign: TextAlign.start,
                 style: const TextStyle(color: Colors.black, fontSize: 20.0),
               ),
             ),
@@ -418,7 +512,8 @@ class MapHomePageState extends State<MapHomePage> {
             mainAxisAlignment: MainAxisAlignment.end,
             children: <Widget>[
               Padding(
-                padding: const EdgeInsets.only(top: 11.0,bottom: 11.0,right: 4),
+                padding:
+                    const EdgeInsets.only(top: 11.0, bottom: 11.0, right: 4),
                 child: LiteRollingSwitch(
                   width: 90,
                   //initial value
@@ -531,7 +626,8 @@ class MapHomePageState extends State<MapHomePage> {
                   ),
               ],
             ),
-      floatingActionButton: CustomFloatingButton(selectedUid: selectedUid, maxZoom: 22.0),
+      floatingActionButton:
+          CustomFloatingButton(selectedUid: selectedUid, maxZoom: 22.0),
     );
   }
 }

@@ -75,19 +75,19 @@ Future<bool> locationPermission() async {
 }
 
 
-void getCurrentLocation() async {
+void getCurrentLocation(dynamic firbaseClass) async {
   if(!await locationPermission()) return;
   Location location = Location();
   location.changeSettings(
       accuracy: LocationAccuracy.high, interval: 10, distanceFilter: 0);
   location.getLocation().then((newLocation) {
-    MapFirebase().setMyCoordinates(newLocation.latitude!.toString(),
+    firbaseClass.setMyCoordinates(newLocation.latitude!.toString(),
         newLocation.longitude!.toString(), bearingMap);
   });
 
   location.onLocationChanged.listen((newLocation) async {
     // speed = ((newLocation.speed??0)*speedBias).toInt();
-    MapFirebase().setMyCoordinates(newLocation.latitude!.toString(),
+    firbaseClass.setMyCoordinatesOptimized(newLocation.latitude!.toString(),
         newLocation.longitude!.toString(), bearingMap);
   });
 }
