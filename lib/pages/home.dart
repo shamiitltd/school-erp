@@ -1,20 +1,15 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
-import 'package:google_maps_flutter/google_maps_flutter.dart';
-import 'package:location/location.dart';
 import 'package:school_erp/config/Colors.dart';
 import 'package:school_erp/config/DynamicConstants.dart';
-import 'package:school_erp/config/StaticConstants.dart';
 import 'package:school_erp/domain/map/MapHome.dart';
 import 'package:school_erp/domain/map/RecordRoute.dart';
 import 'package:school_erp/domain/map/functions/Computational.dart';
-import 'package:school_erp/domain/map/functions/RealTimeDb.dart';
 import 'package:school_erp/pages/dashboard.dart';
 import 'package:school_erp/pages/chat.dart';
 import 'package:school_erp/pages/fee.dart';
 import 'package:school_erp/pages/profile.dart';
 import 'package:school_erp/res/assets_res.dart';
-import 'package:school_erp/shared/functions/Computational.dart';
 
 class MyHomePage extends StatefulWidget {
   const MyHomePage({super.key, required this.title});
