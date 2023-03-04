@@ -5,29 +5,30 @@ import 'package:school_erp/config/DynamicConstants.dart';
 import 'package:school_erp/domain/erpwebsite/ErpWebView.dart';
 import 'package:school_erp/domain/map/MapHome.dart';
 import 'package:school_erp/domain/map/RecordRoute.dart';
-import 'package:school_erp/domain/map/functions/Computational.dart';
 import 'package:school_erp/pages/dashboard.dart';
 import 'package:school_erp/pages/chat.dart';
 import 'package:school_erp/pages/fee.dart';
 import 'package:school_erp/pages/profile.dart';
 import 'package:school_erp/res/assets_res.dart';
 
-class MyHomePage extends StatefulWidget {
-  const MyHomePage({super.key, required this.title});
+class HomePage extends StatefulWidget {
+  const HomePage({super.key, required this.title});
   final String title;
 
   @override
-  State<MyHomePage> createState() => _MyHomePageState();
+  State<HomePage> createState() => _HomePageState();
 }
 
-class _MyHomePageState extends State<MyHomePage> {
+class _HomePageState extends State<HomePage> {
   final user = FirebaseAuth.instance.currentUser;
   var currentPage = DrawerSections.dashboard;
+  final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
+  int count =0;
+  double navTopPadding = 60;
 
   @override
   void initState() {
     super.initState();
-    locationPermission();
   }
 
   void _onItemTapped(int index) {
@@ -35,8 +36,10 @@ class _MyHomePageState extends State<MyHomePage> {
       setState(() {
         sepFlag = 0;
         selectedIndex = index;
+        navTopPadding=20;
         if (index == 0) {
           currentPage = DrawerSections.dashboard;
+          navTopPadding =60;
         } else if (index == 1) {
           currentPage = DrawerSections.chat;
         } else if (index == 2) {
@@ -56,7 +59,7 @@ class _MyHomePageState extends State<MyHomePage> {
     // getCurrentLocation();
     var container;
     if (currentPage == DrawerSections.dashboard) {
-      container = Dashboard();
+      container = WebViewExample();
     } else if (currentPage == DrawerSections.chat) {
       container = ChatActivity();
     }  else if (currentPage == DrawerSections.fee) {
@@ -75,25 +78,55 @@ class _MyHomePageState extends State<MyHomePage> {
       container = const Text('Empty');
     }
 
-    return Scaffold(
-        appBar: AppBar(
-          // leading: Icon(Icons.menu),
-          title: Text(widget.title),
-        ),
-        drawer: Drawer(
-          child: SingleChildScrollView(
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.start,
-              children: <Widget>[MyHeaderDrawer(), MyDrawerList()],
+    return WillPopScope(
+      onWillPop: () async{
+        return Future.value(true);
+        // setState(() {
+        //   count++;
+        // });
+        // print('Home Page');
+        // print(count);
+        // if(count > 2){
+        //   return Future.value(true);
+        // }else{
+        //   return Future.value(false);
+        // }
+      },
+      child: Scaffold(
+          key: _scaffoldKey,
+          endDrawer: Drawer(
+            child: SingleChildScrollView(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.start,
+                children: <Widget>[MyHeaderDrawer(), MyDrawerList()],
+              ),
             ),
           ),
-        ),
-        body: container,
-        bottomNavigationBar:
-            BottomNavBar() // This trailing comma makes auto-formatting nicer for build methods.
-        );
-  }
+          endDrawerEnableOpenDragGesture: true,
+          body: SafeArea(child: container),
+          floatingActionButton: favoriteButton(navTopPadding),
+          floatingActionButtonLocation: FloatingActionButtonLocation
+              .endTop,
+          floatingActionButtonAnimator: FloatingActionButtonAnimator.scaling,
 
+          bottomNavigationBar:
+          BottomNavBar() // This trailing comma makes auto-formatting nicer for build methods.
+      ),
+    );
+  }
+  Widget favoriteButton(double navTopPadding) {
+    return Padding(
+      padding: EdgeInsets.only(top: navTopPadding),
+      child: FloatingActionButton(
+        mini: true,
+        shape: BeveledRectangleBorder(borderRadius: BorderRadius.circular(5)),
+        onPressed: () async {
+          _scaffoldKey.currentState?.openEndDrawer();
+        },
+        child: const Icon(Icons.menu),
+      ),
+    );
+  }
   Widget MyDrawerList() {
     return Container(
       child: Column(
