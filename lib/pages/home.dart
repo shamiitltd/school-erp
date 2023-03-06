@@ -78,7 +78,7 @@ class _MyHomePageState extends State<MyHomePage> {
     } else if (currentPage == DrawerSections.logout) {
       FirebaseAuth.instance.signOut();
     } else if (currentPage == DrawerSections.visitors) {
-      container = NormalVisitor();
+      container = ViewVisitors();
     }else{
       container = const Text('Empty');
     }
