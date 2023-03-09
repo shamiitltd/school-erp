@@ -71,7 +71,7 @@ class MapRecordPageOSMState extends State<MapRecordPageOSM> {
 
   Future<void> setUp() async {
     getMyInfo();
-    getCurrentLocation();
+    if (await locationPermission()) getCurrentLocation();
     startSensors();
     zoomMap = await getZoomLevel(); //from sharedPrefs
     focusMe = true;
@@ -248,6 +248,7 @@ class MapRecordPageOSMState extends State<MapRecordPageOSM> {
         setState(() {});
       }
     });
+    await location.enableBackgroundMode(enable: isLocationBackground);
   }
 
   Future<LocationData?> updateDistanceTravelled(
@@ -259,8 +260,8 @@ class MapRecordPageOSMState extends State<MapRecordPageOSM> {
             currentLocationDataOld!.longitude!),
         LatLng(currentLocationData!.latitude!, currentLocationData.longitude!));
     if (recordingStart) {
-      distanceTravelled += meter / 1000;
-      await setTotalDistanceTravelled(firbaseClass, meter / 1000);
+      distanceTravelled += meter;
+      await setTotalDistanceTravelled(firbaseClass, meter);
     }
     currentLocationDataOld = currentLocationData;
     return currentLocationData; //now this will became old data.
@@ -501,7 +502,7 @@ class MapRecordPageOSMState extends State<MapRecordPageOSM> {
             Expanded(
               flex: 5,
               child: Text(
-                '${distanceTravelled.toStringAsFixed(2)}Km',
+                '${(distanceTravelled/1000).toStringAsFixed(2)}Km',
                 textAlign: TextAlign.start,
                 style: const TextStyle(color: Colors.black, fontSize: 20.0),
               ),

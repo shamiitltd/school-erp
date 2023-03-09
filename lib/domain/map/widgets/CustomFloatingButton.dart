@@ -189,7 +189,7 @@ class _CustomFloatingButtonState extends State<CustomFloatingButton> {
                               ],
                             ),
                             child: Text(
-                                '${totalDistanceTravelled.toStringAsFixed(2)} Km',
+                                '${(totalDistanceTravelled/1000).toStringAsFixed(2)} Km',
                                 style: const TextStyle(
                                     color: Colors.white, fontSize: 20.0)),
                           ),

@@ -67,10 +67,11 @@ class MapHomePageState extends State<MapHomePage> {
   bool isPolylineReady = false;
   bool isRouteLoaded = true;
   bool isUserBus = false;
+  int exitCount = 0;
 
   void setUp() async {
     getMyInfo();
-    getCurrentLocation();
+    if (await locationPermission()) getCurrentLocation();
     startSensors();
     zoomMap = await getZoomLevel(); //from sharedPrefs
     focusMe = true;
@@ -260,6 +261,7 @@ class MapHomePageState extends State<MapHomePage> {
         setState(() {});
       }
     });
+    await location.enableBackgroundMode(enable: isLocationBackground);
   }
 
   Future<LocationData?> updateDistanceTravelled(
@@ -272,8 +274,8 @@ class MapHomePageState extends State<MapHomePage> {
         latlonglib.LatLng(
             currentLocationData!.latitude!, currentLocationData.longitude!));
     if (recordingStart) {
-      distanceTravelled += meter / 1000;
-      await setTotalDistanceTravelled(firbaseClass, meter / 1000);
+      distanceTravelled += meter;
+      await setTotalDistanceTravelled(firbaseClass, meter);
     }
     currentLocationDataOld = currentLocationData;
     return currentLocationData; //now this will became old data.
@@ -346,7 +348,7 @@ class MapHomePageState extends State<MapHomePage> {
 
   Future showSelectedUserInfoPopup(String Uid) async {
     DatabaseReference starCountRef =
-    FirebaseDatabase.instance.ref('users/$Uid');
+        FirebaseDatabase.instance.ref('users/$Uid');
     starCountRef.onValue.listen((DatabaseEvent event) {
       selectedUserdata = event.snapshot.value as Map<dynamic, dynamic>;
       showDialog(
@@ -448,186 +450,213 @@ class MapHomePageState extends State<MapHomePage> {
       });
     }
 
-    return Scaffold(
-      appBar: AppBar(
-        backgroundColor: mapNavColor,
-        title: Row(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            const Expanded(
-              flex: 2,
-              child: Text(
-                'R:',
-                textAlign: TextAlign.start,
-                style: TextStyle(color: Colors.black, fontSize: 20.0),
+    return WillPopScope(
+      onWillPop: () async {
+        final value = await showDialog(
+            context: context,
+            builder: (context) {
+              return AlertDialog(
+                title: const Text('Alert'),
+                content: const Text('Do you want to Exit'),
+                actions: [
+                  ElevatedButton(
+                    onPressed: () => Navigator.of(context).pop(false),
+                    child: const Text('No'),
+                  ),
+                  ElevatedButton(
+                    onPressed: () => Navigator.of(context).pop(true),
+                    child: const Text('Exit'),
+                  )
+                ],
+              );
+            });
+        if (value != null) {
+          return Future.value(value);
+        } else {
+          return Future.value(false);
+        }
+      },
+      child: Scaffold(
+        appBar: AppBar(
+          backgroundColor: mapNavColor,
+          title: Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              const Expanded(
+                flex: 2,
+                child: Text(
+                  'R:',
+                  textAlign: TextAlign.start,
+                  style: TextStyle(color: Colors.black, fontSize: 20.0),
+                ),
               ),
-            ),
-            Expanded(
-              flex: 5,
-              child: _selectedRoute.isNotEmpty
-                  ? ((currentUserdata['routeAccess'] == true)
-                      ? DropdownButton(
-                          value: _selectedRoute,
-                          items: userRoute.map((route) {
-                            return DropdownMenuItem(
-                              value: route,
-                              child: Text(route),
-                            );
-                          }).toList(),
-                          onChanged: (value) async {
-                            myOldRoute = _selectedRoute;
-                            _selectedRoute = value ?? '';
-                            markers = {};
-                            selectedUid = '';
-                            infoUpdate = false;
-                            polylineCoordinates = [];
-                            myRoute = _selectedRoute;
-                            if (_mounted) setState(() {});
-                            await firbaseClass
-                                .setRouteOptimized(_selectedRoute);
-                            getLocationIcon();
-                            updateMakers();
-                          },
-                        )
-                      : Text(
-                          currentUserdata['route'] ?? 'Loading..',
-                          textAlign: TextAlign.start,
-                          style: const TextStyle(
-                              color: Colors.black, fontSize: 20.0),
-                        ))
-                  : const Text('Loading..', textAlign: TextAlign.start),
-            ),
-            Expanded(
-              flex: 5,
-              child: Text(
-                '${distanceTravelled.toStringAsFixed(2)}Km',
-                textAlign: TextAlign.start,
-                style: const TextStyle(color: Colors.black, fontSize: 20.0),
+              Expanded(
+                flex: 5,
+                child: _selectedRoute.isNotEmpty
+                    ? ((currentUserdata['routeAccess'] == true)
+                        ? DropdownButton(
+                            value: _selectedRoute,
+                            items: userRoute.map((route) {
+                              return DropdownMenuItem(
+                                value: route,
+                                child: Text(route),
+                              );
+                            }).toList(),
+                            onChanged: (value) async {
+                              myOldRoute = _selectedRoute;
+                              _selectedRoute = value ?? '';
+                              markers = {};
+                              selectedUid = '';
+                              infoUpdate = false;
+                              polylineCoordinates = [];
+                              myRoute = _selectedRoute;
+                              if (_mounted) setState(() {});
+                              await firbaseClass
+                                  .setRouteOptimized(_selectedRoute);
+                              getLocationIcon();
+                              updateMakers();
+                            },
+                          )
+                        : Text(
+                            currentUserdata['route'] ?? 'Loading..',
+                            textAlign: TextAlign.start,
+                            style: const TextStyle(
+                                color: Colors.black, fontSize: 20.0),
+                          ))
+                    : const Text('Loading..', textAlign: TextAlign.start),
               ),
-            ),
-          ],
-        ),
-        actions: [
-          Row(
-            mainAxisAlignment: MainAxisAlignment.end,
-            children: <Widget>[
-              Padding(
-                padding:
-                    const EdgeInsets.only(top: 11.0, bottom: 11.0, right: 4),
-                child: LiteRollingSwitch(
-                  width: 90,
-                  //initial value
-                  onTap: () => {},
-                  onDoubleTap: () => {},
-                  onSwipe: () => {},
-                  value: recordingStart,
-                  textOn: 'End',
-                  textOff: 'Start',
-                  colorOn: Colors.greenAccent[700] as Color,
-                  colorOff: Colors.redAccent[700] as Color,
-                  iconOn: Icons.done,
-                  iconOff: Icons.remove_circle_outline,
-                  textSize: 16.0,
-                  onChanged: (bool state) {
-                    setState(() {
-                      recordingStart = state;
-                      // focusLiveLocation = value;
-                    });
-                  },
+              Expanded(
+                flex: 5,
+                child: Text(
+                  '${(distanceTravelled / 1000).toStringAsFixed(2)}Km',
+                  textAlign: TextAlign.start,
+                  style: const TextStyle(color: Colors.black, fontSize: 20.0),
                 ),
               ),
             ],
-          )
-        ],
-      ),
-      body: currentLocationData == null
-          ? Center(
-              child: TextButton(
-                onPressed: () {
-                  getCurrentLocation();
-                },
-                child: const Text('Click here to Reload'),
-              ),
-            )
-          : Stack(
-              alignment: Alignment.center,
-              children: [
-                GoogleMap(
-                  onCameraMove: (object) => {
-                    if (_mounted)
+          ),
+          actions: [
+            Row(
+              mainAxisAlignment: MainAxisAlignment.end,
+              children: <Widget>[
+                Padding(
+                  padding:
+                      const EdgeInsets.only(top: 11.0, bottom: 11.0, right: 4),
+                  child: LiteRollingSwitch(
+                    width: 90,
+                    //initial value
+                    onTap: () => {},
+                    onDoubleTap: () => {},
+                    onSwipe: () => {},
+                    value: recordingStart,
+                    textOn: 'End',
+                    textOff: 'Start',
+                    colorOn: Colors.greenAccent[700] as Color,
+                    colorOff: Colors.redAccent[700] as Color,
+                    iconOn: Icons.done,
+                    iconOff: Icons.remove_circle_outline,
+                    textSize: 16.0,
+                    onChanged: (bool state) {
                       setState(() {
-                        mapCameraLocation = LatLng(
-                            object.target.latitude, object.target.longitude);
-                        focusMe = compareLatLang(
-                            myLocation, mapCameraLocation, zoomPrecision);
-                        if (selectedUid.isNotEmpty) {
-                          focusDest = compareLatLang(
-                              destination, mapCameraLocation, zoomPrecision);
-                        }
-                      })
-                  },
-                  mapType: MapType.hybrid,
-                  tiltGesturesEnabled: true,
-                  rotateGesturesEnabled: true,
-                  mapToolbarEnabled: true,
-                  compassEnabled: true,
-                  buildingsEnabled: true,
-                  myLocationEnabled: true,
-                  trafficEnabled: true,
-                  scrollGesturesEnabled: true,
-                  zoomGesturesEnabled: true,
-                  myLocationButtonEnabled: false,
-                  zoomControlsEnabled: false,
-                  initialCameraPosition: CameraPosition(
-                      bearing: bearingMap,
-                      tilt: tiltMap,
-                      target: LatLng(currentLocationData!.latitude!,
-                          currentLocationData!.longitude!),
-                      zoom: zoomMap),
-                  polylines: {
-                    Polyline(
-                        polylineId: const PolylineId("route"),
-                        points: polylineCoordinates,
-                        color: primaryColor,
-                        width: 6)
-                  },
-                  markers: markers,
-                  onMapCreated: (mapController) {
-                    _controller.complete(mapController);
-                  },
+                        recordingStart = state;
+                        // focusLiveLocation = value;
+                      });
+                    },
+                  ),
                 ),
-                if (infoUpdate)
-                  Positioned(
-                    top: 20.0,
-                    child: Container(
-                      padding: const EdgeInsets.symmetric(
-                        vertical: 6.0,
-                        horizontal: 12.0,
-                      ),
-                      decoration: BoxDecoration(
-                        color: Colors.yellowAccent,
-                        borderRadius: BorderRadius.circular(20.0),
-                        boxShadow: const [
-                          BoxShadow(
-                            color: Colors.black26,
-                            offset: Offset(0, 2),
-                            blurRadius: 6.0,
-                          )
-                        ],
-                      ),
-                      child: Text(
-                        '${_info.totalDistance}, ${_info.totalDuration}',
-                        style: const TextStyle(
-                          fontSize: 18.0,
-                          fontWeight: FontWeight.w600,
+              ],
+            )
+          ],
+        ),
+        body: currentLocationData == null
+            ? Center(
+                child: TextButton(
+                  onPressed: () {
+                    getCurrentLocation();
+                  },
+                  child: const Text('Click here to Reload'),
+                ),
+              )
+            : Stack(
+                alignment: Alignment.center,
+                children: [
+                  GoogleMap(
+                    onCameraMove: (object) => {
+                      if (_mounted)
+                        setState(() {
+                          mapCameraLocation = LatLng(
+                              object.target.latitude, object.target.longitude);
+                          focusMe = compareLatLang(
+                              myLocation, mapCameraLocation, zoomPrecision);
+                          if (selectedUid.isNotEmpty) {
+                            focusDest = compareLatLang(
+                                destination, mapCameraLocation, zoomPrecision);
+                          }
+                        })
+                    },
+                    mapType: MapType.hybrid,
+                    tiltGesturesEnabled: true,
+                    rotateGesturesEnabled: true,
+                    mapToolbarEnabled: true,
+                    compassEnabled: true,
+                    buildingsEnabled: true,
+                    myLocationEnabled: true,
+                    trafficEnabled: true,
+                    scrollGesturesEnabled: true,
+                    zoomGesturesEnabled: true,
+                    myLocationButtonEnabled: false,
+                    zoomControlsEnabled: false,
+                    initialCameraPosition: CameraPosition(
+                        bearing: bearingMap,
+                        tilt: tiltMap,
+                        target: LatLng(currentLocationData!.latitude!,
+                            currentLocationData!.longitude!),
+                        zoom: zoomMap),
+                    polylines: {
+                      Polyline(
+                          polylineId: const PolylineId("route"),
+                          points: polylineCoordinates,
+                          color: primaryColor,
+                          width: 6)
+                    },
+                    markers: markers,
+                    onMapCreated: (mapController) {
+                      _controller.complete(mapController);
+                    },
+                  ),
+                  if (infoUpdate)
+                    Positioned(
+                      top: 20.0,
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(
+                          vertical: 6.0,
+                          horizontal: 12.0,
+                        ),
+                        decoration: BoxDecoration(
+                          color: Colors.yellowAccent,
+                          borderRadius: BorderRadius.circular(20.0),
+                          boxShadow: const [
+                            BoxShadow(
+                              color: Colors.black26,
+                              offset: Offset(0, 2),
+                              blurRadius: 6.0,
+                            )
+                          ],
+                        ),
+                        child: Text(
+                          '${_info.totalDistance}, ${_info.totalDuration}',
+                          style: const TextStyle(
+                            fontSize: 18.0,
+                            fontWeight: FontWeight.w600,
+                          ),
                         ),
                       ),
                     ),
-                  ),
-              ],
-            ),
-      floatingActionButton:
-          CustomFloatingButton(selectedUid: selectedUid, maxZoom: 22.0),
+                ],
+              ),
+        floatingActionButton:
+            CustomFloatingButton(selectedUid: selectedUid, maxZoom: 22.0),
+      ),
     );
   }
 }

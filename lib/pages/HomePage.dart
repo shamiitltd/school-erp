@@ -5,7 +5,6 @@ import 'package:school_erp/config/DynamicConstants.dart';
 import 'package:school_erp/domain/erpwebsite/ErpWebView.dart';
 import 'package:school_erp/domain/map/MapHome.dart';
 import 'package:school_erp/domain/map/RecordRoute.dart';
-import 'package:school_erp/pages/dashboard.dart';
 import 'package:school_erp/pages/chat.dart';
 import 'package:school_erp/pages/fee.dart';
 import 'package:school_erp/pages/profile.dart';
@@ -36,7 +35,7 @@ class _HomePageState extends State<HomePage> {
       setState(() {
         sepFlag = 0;
         selectedIndex = index;
-        navTopPadding=20;
+        // navTopPadding=20;
         if (index == 0) {
           currentPage = DrawerSections.dashboard;
           navTopPadding =60;
@@ -46,9 +45,9 @@ class _HomePageState extends State<HomePage> {
           currentPage = DrawerSections.profile;
         } else if (index == 3) {
           currentPage = DrawerSections.trackbus;
-          Navigator.of(context).push(MaterialPageRoute(
-            builder: (context) => const MapHomePage(),
-          ));
+          // Navigator.of(context).push(MaterialPageRoute(
+          //   builder: (context) => const MapHomePage(),
+          // ));
         }
       });
     }
@@ -64,6 +63,8 @@ class _HomePageState extends State<HomePage> {
       container = ChatActivity();
     }  else if (currentPage == DrawerSections.fee) {
       container = FeeActivity();
+    }  else if (currentPage == DrawerSections.trackbus) {
+      container = MapHomePage();
     } else if (currentPage == DrawerSections.settings) {
       container = ProfileActivity();
     } else if (currentPage == DrawerSections.notifications) {
@@ -179,9 +180,9 @@ class _HomePageState extends State<HomePage> {
                 currentPage = DrawerSections.fee;
               } else if (id == 4) {
                 currentPage = DrawerSections.trackbus;
-                Navigator.of(context).push(MaterialPageRoute(
-                  builder: (context) => const MapHomePage(),
-                ));
+                // Navigator.of(context).push(MaterialPageRoute(
+                //   builder: (context) => const MapHomePage(),
+                // ));
               } else if (id == 5) {
                 currentPage = DrawerSections.settings;
                 Navigator.of(context).push(MaterialPageRoute(

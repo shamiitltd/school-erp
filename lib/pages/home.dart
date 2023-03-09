@@ -5,7 +5,6 @@ import 'package:school_erp/config/DynamicConstants.dart';
 import 'package:school_erp/domain/erpwebsite/ErpWebView.dart';
 import 'package:school_erp/domain/map/MapHome.dart';
 import 'package:school_erp/domain/map/RecordRoute.dart';
-import 'package:school_erp/domain/map/functions/Computational.dart';
 import 'package:school_erp/pages/dashboard.dart';
 import 'package:school_erp/pages/chat.dart';
 import 'package:school_erp/pages/fee.dart';
@@ -27,7 +26,6 @@ class _MyHomePageState extends State<MyHomePage> {
   @override
   void initState() {
     super.initState();
-    locationPermission();
   }
 
   void _onItemTapped(int index) {
