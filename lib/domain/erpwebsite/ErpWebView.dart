@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:io';
 
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_inappwebview/flutter_inappwebview.dart';
 
@@ -20,15 +21,34 @@ class _WebViewExampleState extends State<WebViewExample> {
   int count = 0;
   var loadingPercentage = 0;
   bool isInternet = true;
-  String initialUrl = 'https://iitjeemathsking.com/after-login';
+  String afterLoginUrl = '';//https://iitjeemathsking.com/after-login
   String loginUrl = '';
   String errorMessage = '';
   bool isLoggedIn = false;
 
+  void loadErpInfo() async {
+    FirebaseDatabase.instance
+        .ref()
+        .child("erpInfo")
+        .onValue
+        .listen((DatabaseEvent event) {
+      Map<dynamic, dynamic> data =
+          event.snapshot.value as Map<dynamic, dynamic>;
+      data.forEach((key, value) {
+        if (key == 'afterLogin') {
+          afterLoginUrl = value;
+        } else if (key == 'loginApi') {
+          loginUrl = '$value?email=${user?.email}&uid=${user?.uid}';
+        }
+      });
+      if (mounted) setState(() {});
+    });
+  }
+
   @override
   void initState() {
     super.initState();
-    loginHandler();
+    loadErpInfo();
     webViewAccess();
     pullToRefreshController = PullToRefreshController(
       onRefresh: () {
@@ -40,14 +60,6 @@ class _WebViewExampleState extends State<WebViewExample> {
   @override
   void dispose() {
     super.dispose();
-  }
-
-  Future<void> loginHandler() async {
-    final user = this.user;
-    if (user != null) {
-      loginUrl = 'https://iitjeemathsking.com/api/login?email=${user.email ?? ''}&uid=${user.uid}';
-    }
-    setState(() {});
   }
 
   @override
@@ -63,7 +75,11 @@ class _WebViewExampleState extends State<WebViewExample> {
       },
       child: Stack(
         children: [
-          if (isInternet)
+          if(afterLoginUrl.isEmpty || loginUrl.isEmpty)
+            const Center(child: CircularProgressIndicator(
+              color: Colors.blue,
+            )),
+          if (isInternet && afterLoginUrl.isNotEmpty && loginUrl.isNotEmpty)
             InAppWebView(
               onLoadStart: (controller, url) {
                 loadingPercentage = 0;
@@ -76,9 +92,10 @@ class _WebViewExampleState extends State<WebViewExample> {
               onLoadStop: (controller, url) {
                 pullToRefreshController!.endRefreshing();
                 loadingPercentage = 100;
-                if(!isLoggedIn) {
-                  isLoggedIn=true;
-                  inAppWebViewController?.loadUrl(urlRequest: URLRequest(url: Uri.parse(initialUrl)));
+                if (!isLoggedIn) {
+                  isLoggedIn = true;
+                  inAppWebViewController?.loadUrl(
+                      urlRequest: URLRequest(url: Uri.parse(afterLoginUrl)));
                 }
                 setState(() {});
               },
@@ -86,9 +103,10 @@ class _WebViewExampleState extends State<WebViewExample> {
                 if (message.isNotEmpty) {
                   errorMessage = "No Internet/Server Error";
                   isInternet = false;
-                  if(!isLoggedIn) {
-                    isLoggedIn=true;
-                    inAppWebViewController?.loadUrl(urlRequest: URLRequest(url: Uri.parse(initialUrl)));
+                  if (!isLoggedIn) {
+                    isLoggedIn = true;
+                    inAppWebViewController?.loadUrl(
+                        urlRequest: URLRequest(url: Uri.parse(afterLoginUrl)));
                   }
                   setState(() {});
                 }
@@ -98,7 +116,7 @@ class _WebViewExampleState extends State<WebViewExample> {
                   inAppWebViewController = controller,
               initialUrlRequest: URLRequest(url: Uri.parse(loginUrl)),
             ),
-          if (!isInternet)
+          if (!isInternet && afterLoginUrl.isNotEmpty && loginUrl.isNotEmpty)
             Center(
                 child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
