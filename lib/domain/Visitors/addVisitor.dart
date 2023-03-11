@@ -5,7 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:school_erp/config/Colors.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:firebase_storage/firebase_storage.dart';
-
+import 'package:school_erp/domain/Visitors/ScanVisitor.dart';
 
 class AddVisitor extends StatefulWidget {
   const AddVisitor({Key? key}) : super(key: key);
@@ -14,7 +14,6 @@ class AddVisitor extends StatefulWidget {
   State<AddVisitor> createState() => _addVisitor();
 }
 
-
 class _addVisitor extends State<AddVisitor> {
   final _formKey = GlobalKey<FormState>();
   final displayNameController = TextEditingController();
@@ -22,23 +21,7 @@ class _addVisitor extends State<AddVisitor> {
   final emailController = TextEditingController();
   final phoneController = TextEditingController();
   final addressController = TextEditingController();
-
-
-  late File _pickedImage;
-  late CameraController _controller;
-  CollectionReference visitors = FirebaseFirestore.instance.collection('visitor');
-
-  Map<String, dynamic> visitorData ={
-    "Name":"",
-    "Phone":"",
-    "Email":"",
-    "Address":"",
-    "Reason":"",
-    "VisitTime":DateTime.now().millisecondsSinceEpoch,
-
-  };
   String imageUrl = '';
-
 
   @override
   void dispose() {
@@ -48,72 +31,90 @@ class _addVisitor extends State<AddVisitor> {
     addressController.dispose();
     super.dispose();
   }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        backgroundColor: Colors.transparent,
         elevation: 0,
         leading: IconButton(
           icon: const Icon(
             Icons.arrow_back_ios_new_outlined,
-            color: loginButtonTextColor,
-            shadows: [
-              Shadow(color: loginIconColor,blurRadius: 100)
-            ],
+            color: Colors.white,
+            shadows: [Shadow(color: loginIconColor, blurRadius: 100)],
           ),
           onPressed: () => Navigator.pop(context),
         ),
-
+        actions:  [
+          IconButton(onPressed: () {
+            Navigator.push(
+              context,
+              MaterialPageRoute(builder: (context) => const ScanVisitor()),
+            );
+          }, icon: const Icon(Icons.qr_code_2_rounded))
+        ],
       ),
       body: Form(
         key: _formKey,
         child: SingleChildScrollView(
           child: Padding(
-            padding: EdgeInsets.fromLTRB(20, MediaQuery.of(context).size.height * 0.001002, 20, 0),
+            padding: EdgeInsets.fromLTRB(
+                20, MediaQuery.of(context).size.height * 0.001002, 20, 0),
             child: Column(
               children: <Widget>[
                 Stack(
                   alignment: Alignment.bottomCenter,
                   children: [
-                    Container(margin: const EdgeInsets.symmetric(horizontal: 30,vertical: 30),),
+                    Container(
+                      margin: const EdgeInsets.symmetric(
+                          horizontal: 30, vertical: 30),
+                    ),
                     Row(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
                         InkWell(
                           onTap: () async {
-                            ImagePicker imagePicker=ImagePicker();
-                            XFile? file = await imagePicker.pickImage(source: ImageSource.camera);
+                            ImagePicker imagePicker = ImagePicker();
+                            XFile? file = await imagePicker.pickImage(
+                                source: ImageSource.camera);
                             print('${file?.path}');
                             print(imagePicker);
                             if (file == null) return;
                             setState(() {
                               imageUrl = file.path;
                             });
-                            if (file ==null) return;
-                            String UniqueImageName = DateTime.now().millisecondsSinceEpoch.toString();
-                            Reference referenceRoot = FirebaseStorage.instance.ref();
-                            Reference referenceDirImages = referenceRoot.child('images');
-                            Reference referenceImageToUpload = referenceDirImages.child(UniqueImageName);
-                            try{
-                              await referenceImageToUpload.putFile(File(file!.path));
-                              imageUrl= await referenceImageToUpload.getDownloadURL();
-                            }catch(error){ }
+                            if (file == null) return;
+                            String UniqueImageName = DateTime.now()
+                                .millisecondsSinceEpoch
+                                .toString();
+                            Reference referenceRoot =
+                                FirebaseStorage.instance.ref();
+                            Reference referenceDirImages =
+                                referenceRoot.child('images');
+                            Reference referenceImageToUpload =
+                                referenceDirImages.child(UniqueImageName);
+                            try {
+                              await referenceImageToUpload
+                                  .putFile(File(file!.path));
+                              imageUrl =
+                                  await referenceImageToUpload.getDownloadURL();
+                            } catch (error) {}
                           },
                           child: CircleAvatar(
-                             radius: 71,
-                             backgroundColor: loginButtonTextColor,
+                              radius: 71,
+                              backgroundColor: loginButtonTextColor,
                               child: CircleAvatar(
-                                 radius: 65,
+                                radius: 65,
                                 child: imageUrl != null
                                     ? CircleAvatar(
-                                  radius: 65,
-                                  backgroundImage: FileImage(File(imageUrl!)),
-                                )
+                                        radius: 65,
+                                        backgroundImage:
+                                            FileImage(File(imageUrl!)),
+                                      )
                                     : const Icon(
-                                  Icons.person,
-                                  size: 65,
-                                ),
+                                        Icons.person,
+                                        size: 65,
+                                      ),
                               )),
                         ),
                       ],
@@ -122,13 +123,12 @@ class _addVisitor extends State<AddVisitor> {
                 ),
                 const SizedBox(height: 15),
                 TextFormField(
-                  validator: ( msg) {
-                    if(msg!.isEmpty) {
+                  validator: (msg) {
+                    if (msg!.isEmpty) {
                       return "Enter a valid name";
                     }
                     return null;
-
-                  } ,
+                  },
                   controller: displayNameController,
                   textInputAction: TextInputAction.next,
                   cursorColor: loginButtonColor,
@@ -140,7 +140,7 @@ class _addVisitor extends State<AddVisitor> {
                     ),
                     labelText: 'Name',
                     labelStyle:
-                    TextStyle(color: loginTextColor.withOpacity(0.9)),
+                        TextStyle(color: loginTextColor.withOpacity(0.9)),
                     border: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(30.0),
                         borderSide: const BorderSide(
@@ -148,17 +148,15 @@ class _addVisitor extends State<AddVisitor> {
                             style: BorderStyle.solid,
                             color: loginIconColor)),
                   ),
-
                 ),
                 const SizedBox(height: 10),
                 TextFormField(
-                  validator: ( number) {
-                    if(number!.isEmpty) {
+                  validator: (number) {
+                    if (number!.isEmpty) {
                       return "Enter a valid Number";
                     }
                     return null;
-
-                  } ,
+                  },
                   controller: phoneController,
                   keyboardType: TextInputType.phone,
                   textInputAction: TextInputAction.next,
@@ -171,7 +169,7 @@ class _addVisitor extends State<AddVisitor> {
                     ),
                     labelText: 'Phone Number',
                     labelStyle:
-                    TextStyle(color: loginTextColor.withOpacity(0.9)),
+                        TextStyle(color: loginTextColor.withOpacity(0.9)),
                     border: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(30.0),
                         borderSide: const BorderSide(
@@ -179,7 +177,6 @@ class _addVisitor extends State<AddVisitor> {
                             style: BorderStyle.solid,
                             color: loginIconColor)),
                   ),
-
                 ),
                 const SizedBox(height: 10),
                 TextFormField(
@@ -194,7 +191,7 @@ class _addVisitor extends State<AddVisitor> {
                     ),
                     labelText: 'Email Id',
                     labelStyle:
-                    TextStyle(color: loginTextColor.withOpacity(0.9)),
+                        TextStyle(color: loginTextColor.withOpacity(0.9)),
                     border: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(30.0),
                         borderSide: const BorderSide(
@@ -202,17 +199,15 @@ class _addVisitor extends State<AddVisitor> {
                             style: BorderStyle.solid,
                             color: loginIconColor)),
                   ),
-
                 ),
                 const SizedBox(height: 10),
                 TextFormField(
-                  validator: ( msg) {
-                    if(msg!.isEmpty) {
+                  validator: (msg) {
+                    if (msg!.isEmpty) {
                       return "Enter valid Address";
                     }
                     return null;
-
-                  } ,
+                  },
                   controller: addressController,
                   textInputAction: TextInputAction.next,
                   cursorColor: loginButtonColor,
@@ -224,7 +219,7 @@ class _addVisitor extends State<AddVisitor> {
                     ),
                     labelText: 'Address',
                     labelStyle:
-                    TextStyle(color: loginTextColor.withOpacity(0.9)),
+                        TextStyle(color: loginTextColor.withOpacity(0.9)),
                     border: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(30.0),
                         borderSide: const BorderSide(
@@ -232,17 +227,15 @@ class _addVisitor extends State<AddVisitor> {
                             style: BorderStyle.solid,
                             color: loginIconColor)),
                   ),
-
                 ),
                 const SizedBox(height: 10),
                 TextFormField(
-                  validator: ( msg) {
-                    if(msg!.isEmpty) {
+                  validator: (msg) {
+                    if (msg!.isEmpty) {
                       return "Enter valid Reason";
                     }
                     return null;
-
-                  } ,
+                  },
                   controller: messageController,
                   textInputAction: TextInputAction.next,
                   cursorColor: loginButtonColor,
@@ -254,7 +247,7 @@ class _addVisitor extends State<AddVisitor> {
                     ),
                     labelText: 'Reason',
                     labelStyle:
-                    TextStyle(color: loginTextColor.withOpacity(0.9)),
+                        TextStyle(color: loginTextColor.withOpacity(0.9)),
                     border: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(20.0),
                         borderSide: const BorderSide(
@@ -300,10 +293,10 @@ class _addVisitor extends State<AddVisitor> {
               ));
             }
           },
-          child: const Icon(Icons.done, size: 50,)
-
-      ),
+          child: const Icon(
+            Icons.done,
+            size: 50,
+          )),
     );
   }
 }
-
