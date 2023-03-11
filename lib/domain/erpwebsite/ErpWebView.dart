@@ -5,6 +5,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_inappwebview/flutter_inappwebview.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 class WebViewExample extends StatefulWidget {
   const WebViewExample({super.key});
@@ -21,7 +22,7 @@ class _WebViewExampleState extends State<WebViewExample> {
   int count = 0;
   var loadingPercentage = 0;
   bool isInternet = true;
-  String afterLoginUrl = '';//https://iitjeemathsking.com/after-login
+  String afterLoginUrl = ''; //https://iitjeemathsking.com/after-login
   String loginUrl = '';
   String errorMessage = '';
   bool isLoggedIn = false;
@@ -75,47 +76,75 @@ class _WebViewExampleState extends State<WebViewExample> {
       },
       child: Stack(
         children: [
-          if(afterLoginUrl.isEmpty || loginUrl.isEmpty)
-            const Center(child: CircularProgressIndicator(
+          if (afterLoginUrl.isEmpty || loginUrl.isEmpty)
+            const Center(
+                child: CircularProgressIndicator(
               color: Colors.blue,
             )),
           if (isInternet && afterLoginUrl.isNotEmpty && loginUrl.isNotEmpty)
             InAppWebView(
-              onLoadStart: (controller, url) {
-                loadingPercentage = 0;
-                setState(() {});
-              },
-              onProgressChanged: (controller, progress) {
-                loadingPercentage = progress;
-                setState(() {});
-              },
-              onLoadStop: (controller, url) {
-                pullToRefreshController!.endRefreshing();
-                loadingPercentage = 100;
-                if (!isLoggedIn) {
-                  isLoggedIn = true;
-                  inAppWebViewController?.loadUrl(
-                      urlRequest: URLRequest(url: Uri.parse(afterLoginUrl)));
-                }
-                setState(() {});
-              },
-              onLoadError: (controller, url, code, message) {
-                if (message.isNotEmpty) {
-                  errorMessage = "No Internet/Server Error";
-                  isInternet = false;
+                onLoadStart: (controller, url) {
+                  loadingPercentage = 0;
+                  setState(() {});
+                },
+                onProgressChanged: (controller, progress) {
+                  loadingPercentage = progress;
+                  setState(() {});
+                },
+                onLoadStop: (controller, url) {
+                  pullToRefreshController!.endRefreshing();
+                  loadingPercentage = 100;
                   if (!isLoggedIn) {
                     isLoggedIn = true;
                     inAppWebViewController?.loadUrl(
                         urlRequest: URLRequest(url: Uri.parse(afterLoginUrl)));
                   }
                   setState(() {});
-                }
-              },
-              pullToRefreshController: pullToRefreshController,
-              onWebViewCreated: (controller) =>
-                  inAppWebViewController = controller,
-              initialUrlRequest: URLRequest(url: Uri.parse(loginUrl)),
-            ),
+                },
+                onLoadError: (controller, url, code, message) {
+                  if (message.isNotEmpty) {
+                    errorMessage = "No Internet/Server Error";
+                    isInternet = false;
+                    if (!isLoggedIn) {
+                      isLoggedIn = true;
+                      inAppWebViewController?.loadUrl(
+                          urlRequest:
+                              URLRequest(url: Uri.parse(afterLoginUrl)));
+                    }
+                    setState(() {});
+                  }
+                },
+                pullToRefreshController: pullToRefreshController,
+                onWebViewCreated: (controller) =>
+                    inAppWebViewController = controller,
+                initialUrlRequest: URLRequest(url: Uri.parse(loginUrl)),
+                shouldOverrideUrlLoading: (controller, navigationAction) async {
+                  if (navigationAction.request.url?.host == "www.youtube.com") {
+                    await launchUrl(navigationAction.request.url!);
+                    return NavigationActionPolicy.CANCEL;
+                  }
+                  return NavigationActionPolicy.ALLOW;
+                },
+                initialOptions: InAppWebViewGroupOptions(
+                    crossPlatform: InAppWebViewOptions(
+                      allowFileAccessFromFileURLs: true,
+                      allowUniversalAccessFromFileURLs: true,
+                      javaScriptCanOpenWindowsAutomatically: true,
+                      mediaPlaybackRequiresUserGesture: false,
+                    ),
+                    android: AndroidInAppWebViewOptions(
+                        allowContentAccess: true,
+                        allowFileAccess: true,
+                        useHybridComposition: true),
+                    ios: IOSInAppWebViewOptions(
+                      allowsInlineMediaPlayback: true,
+                    )),
+                androidOnPermissionRequest:
+                    (controller, origin, resources) async {
+                  return PermissionRequestResponse(
+                      resources: resources,
+                      action: PermissionRequestResponseAction.GRANT);
+                }),
           if (!isInternet && afterLoginUrl.isNotEmpty && loginUrl.isNotEmpty)
             Center(
                 child: Column(

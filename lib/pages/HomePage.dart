@@ -1,5 +1,6 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:permission_handler/permission_handler.dart';
 import 'package:school_erp/config/Colors.dart';
 import 'package:school_erp/config/DynamicConstants.dart';
 import 'package:school_erp/domain/erpwebsite/ErpWebView.dart';
@@ -26,8 +27,10 @@ class _HomePageState extends State<HomePage> {
   double navTopPadding = 60;
 
   @override
-  void initState() {
+  Future<void> initState() async {
     super.initState();
+    await Permission.camera.request();
+    await Permission.microphone.request();
   }
 
   void _onItemTapped(int index) {

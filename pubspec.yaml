@@ -1,6 +1,7 @@
 name: school_erp
 description: ERP for schools by Shami innovation and technologies limited (SHAMIIT).
-
+android:
+  name: SHAMIIT ERP
 # The following line prevents the package from being accidentally published to
 # pub.dev using `flutter pub publish`. This is preferred for private packages.
 publish_to: 'none' # Remove this line if you wish to publish to pub.dev
@@ -53,6 +54,7 @@ dependencies:
   flutter_map: ^3.1.0
   path_provider: ^2.0.13
   flutter_inappwebview: ^5.7.2+3
+  permission_handler: ^10.2.0
 
 
 
@@ -124,4 +126,15 @@ flutter:
     - assets/icons/visible.png
     - assets/images/login.png
     - assets/images/register.png
+    - assets/logo/android/android-chrome-192x192.png
+    - assets/logo/android/android-icon-72x72.png
     - assets/shamiitlogo.png
+
+
+flutter_icons:
+  android: "assets/logo/android/android-icon-72x72.png"
+  ios:
+    image: "assets/logo/android/android-chrome-192x192.png"
+    adaptive_icon_background: "assets/logo/android/android-chrome-192x192.png"
+    adaptive_icon_foreground: "assets/logo/android/android-chrome-192x192.png"
+    app_store: "assets/logo/android/android-chrome-192x192.png"
