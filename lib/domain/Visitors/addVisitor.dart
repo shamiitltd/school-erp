@@ -6,6 +6,7 @@ import 'package:school_erp/config/Colors.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:school_erp/domain/Visitors/ScanVisitor.dart';
+import 'package:school_erp/res/assets_res.dart';
 
 class AddVisitor extends StatefulWidget {
   const AddVisitor({Key? key}) : super(key: key);
@@ -105,16 +106,16 @@ class _addVisitor extends State<AddVisitor> {
                               backgroundColor: loginButtonTextColor,
                               child: CircleAvatar(
                                 radius: 65,
-                                child: imageUrl != null
+                                child: imageUrl.isNotEmpty
                                     ? CircleAvatar(
                                         radius: 65,
                                         backgroundImage:
                                             FileImage(File(imageUrl!)),
                                       )
-                                    : const Icon(
-                                        Icons.person,
-                                        size: 65,
-                                      ),
+                                    : const CircleAvatar(
+                                  radius: 65,
+                                  backgroundImage: AssetImage(AssetsRes.PERSON),
+                                ),
                               )),
                         ),
                       ],
