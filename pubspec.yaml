@@ -1,6 +1,7 @@
 name: school_erp
 description: ERP for schools by Shami innovation and technologies limited (SHAMIIT).
-
+android:
+  name: SHAMIIT ERP
 # The following line prevents the package from being accidentally published to
 # pub.dev using `flutter pub publish`. This is preferred for private packages.
 publish_to: 'none' # Remove this line if you wish to publish to pub.dev
@@ -33,19 +34,20 @@ dependencies:
     sdk: flutter
 
   cupertino_icons: ^1.0.2
-  firebase_core: ^2.4.1
-  firebase_database: ^10.0.9
-  firebase_auth: ^4.2.5
+  firebase_core: ^2.7.0
+  firebase_database: ^10.0.14
+  firebase_auth: ^4.2.9
   flutter_polyline_points: ^1.0.0
-  google_maps_flutter: ^2.2.3
+  google_maps_flutter: ^2.2.4
+  google_maps_flutter_android: ^2.4.6
   location: ^4.4.0
   latlong2: ^0.8.1
-  flutter_svg: 2.0.1
-  dio: 5.0.0
+  flutter_svg: ^2.0.2
+  dio: ^5.0.1
   email_validator: ^2.1.17
   http: ^0.13.5
-  url_launcher: ^6.1.9
-  shared_preferences: ^2.0.17
+  url_launcher: ^6.1.10
+  shared_preferences: ^2.0.18
   lite_rolling_switch: ^1.0.0
   flutter_compass: ^0.7.0
   motion_sensors: ^0.1.0
@@ -54,6 +56,11 @@ dependencies:
   cloud_firestore: ^4.4.3
   image_picker: ^0.8.6+4
   firebase_storage: ^11.0.14
+  path_provider: ^2.0.13
+  flutter_inappwebview: ^5.7.2+3
+  permission_handler: ^10.2.0
+  flutter_downloader: ^1.10.2
+
 
 
 
@@ -122,4 +129,15 @@ flutter:
     - assets/icons/visible.png
     - assets/images/login.png
     - assets/images/register.png
+    - assets/logo/android/android-chrome-192x192.png
+    - assets/logo/android/android-icon-72x72.png
     - assets/shamiitlogo.png
+
+
+flutter_icons:
+  android: "assets/logo/android/android-icon-72x72.png"
+  ios:
+    image: "assets/logo/android/android-chrome-192x192.png"
+    adaptive_icon_background: "assets/logo/android/android-chrome-192x192.png"
+    adaptive_icon_foreground: "assets/logo/android/android-chrome-192x192.png"
+    app_store: "assets/logo/android/android-chrome-192x192.png"

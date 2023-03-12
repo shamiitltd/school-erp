@@ -5,21 +5,19 @@ import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_compass/flutter_compass.dart';
 import 'package:flutter_map/flutter_map.dart';
-import 'package:flutter_polyline_points/flutter_polyline_points.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart' as LatLngG;
 import 'package:latlong2/latlong.dart';
 import 'package:lite_rolling_switch/lite_rolling_switch.dart';
 import 'package:location/location.dart';
-import 'package:http/http.dart' as http;
 import 'package:school_erp/config/Colors.dart';
 import 'package:school_erp/config/DynamicConstants.dart';
 import 'package:school_erp/config/StaticConstants.dart';
+import 'package:school_erp/domain/map/config/constants.dart';
 import 'package:school_erp/domain/map/functions/Computational.dart';
 import 'package:school_erp/domain/map/functions/DirectionsRepository.dart';
 import 'package:school_erp/domain/map/functions/RealTimeDb.dart';
 import 'package:school_erp/domain/map/models/Directions.dart';
 import 'package:school_erp/domain/map/widgets/CustomFloatingButton.dart';
-import 'package:school_erp/res/assets_res.dart';
 import 'package:school_erp/shared/functions/Computational.dart';
 import 'package:school_erp/shared/functions/popupSnakbar.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -35,6 +33,7 @@ class MapRecordPageOSM extends StatefulWidget {
 }
 
 class MapRecordPageOSMState extends State<MapRecordPageOSM> {
+  final databaseReference = FirebaseDatabase.instance.ref();
   MapController mapController = MapController();
   var firbaseClass = MapFirebase();
   Location location = Location();
@@ -48,7 +47,9 @@ class MapRecordPageOSMState extends State<MapRecordPageOSM> {
   late LatLng mapCameraLocation;
   LocationData? currentLocationData;
   LocationData? currentLocationDataOld;
-  late StreamSubscription _firebaseSubscription;
+  late StreamSubscription _firebaseSubscriptionMe;
+  late StreamSubscription _firebaseSubscriptionBus;
+  late StreamSubscription _firebaseSubscriptionUserBus;
   late Directions _info;
 
   Set<Marker> markerSet = {};
@@ -65,8 +66,11 @@ class MapRecordPageOSMState extends State<MapRecordPageOSM> {
   bool _mounted = true;
   bool isLocationReady = true;
   bool isPolylineReady = false;
+  bool isRouteLoaded = true;
+  bool isUserBus = false;
 
   Future<void> setUp() async {
+    getMyInfo();
     getCurrentLocation();
     startSensors();
     zoomMap = await getZoomLevel(); //from sharedPrefs
@@ -78,7 +82,6 @@ class MapRecordPageOSMState extends State<MapRecordPageOSM> {
 
   void loadRouteInfo() async {
     List<String> routeList = [];
-    final databaseReference = FirebaseDatabase.instance.ref();
     databaseReference.child("routes").onValue.listen((DatabaseEvent event) {
       Map<dynamic, dynamic> data =
           event.snapshot.value as Map<dynamic, dynamic>;
@@ -88,8 +91,82 @@ class MapRecordPageOSMState extends State<MapRecordPageOSM> {
       if (_mounted) {
         setState(() {
           userRoute = routeList;
-          _selectedRoute = userRoute[0];
         });
+      }
+    });
+  }
+
+  Future getMyInfo() async {
+    DatabaseReference starCountRef =
+        FirebaseDatabase.instance.ref('users/${user?.uid}');
+    _firebaseSubscriptionMe =
+        starCountRef.onValue.listen((DatabaseEvent event) {
+      currentUserdata = event.snapshot.value as Map<dynamic, dynamic>;
+      myCategory = currentUserdata['post'] == 'Driver' ? 'buses' : 'users';
+      myRoute = currentUserdata['route'];
+      currentUserdata['post'] == 'Driver'
+          ? getBusAndUsersInfoByRootId(myRoute)
+          : getBusInfoByRootId(myRoute);
+      if (currentUserdata['routeAccess'] == true && isRouteLoaded == true) {
+        isRouteLoaded = false;
+        loadRouteInfo();
+      }
+
+      if (_mounted) {
+        getLocationIcon();
+        updateMakers();
+        setState(() {});
+      }
+    });
+  }
+
+  Future getBusAndUsersInfoByRootId(String route) async {
+    isUserBus = true;
+    DatabaseReference starCountRef =
+        FirebaseDatabase.instance.ref().child("routesAll/$route");
+    _firebaseSubscriptionUserBus =
+        starCountRef.onValue.listen((DatabaseEvent event) {
+      allUserCompleteData = {};
+      if (event.snapshot.value == null) return;
+      Map<dynamic, dynamic> data =
+          event.snapshot.value as Map<dynamic, dynamic>;
+      if (data["buses"] != null) {
+        data["buses"].forEach((key, value) {
+          if (key != user?.uid) {
+            value['icon'] = "bus";
+            allUserCompleteData.add({key: value});
+          }
+        });
+      }
+      if (data["users"] != null) {
+        data["users"].forEach((key, value) {
+          value['icon'] = "person";
+          allUserCompleteData.add({key: value});
+        });
+      }
+      if (_mounted) {
+        updateMakers();
+        setState(() {});
+      }
+    });
+  }
+
+  Future getBusInfoByRootId(String route) async {
+    DatabaseReference starCountRef =
+        FirebaseDatabase.instance.ref().child("routesAll/$route/buses");
+    _firebaseSubscriptionBus =
+        starCountRef.onValue.listen((DatabaseEvent event) {
+      allUserCompleteData = {};
+      if (event.snapshot.value == null) return;
+      Map<dynamic, dynamic> data =
+          event.snapshot.value as Map<dynamic, dynamic>;
+      data.forEach((key, value) {
+        value['icon'] = "bus";
+        allUserCompleteData.add({key: value});
+      });
+      if (_mounted) {
+        updateMakers();
+        setState(() {});
       }
     });
   }
@@ -98,8 +175,6 @@ class MapRecordPageOSMState extends State<MapRecordPageOSM> {
   void initState() {
     super.initState();
     WidgetsFlutterBinding.ensureInitialized();
-    loadRouteInfo();
-    getCoordinatesByRootId();
     final user = this.user;
     if (user != null) {
       currentUid = user.uid;
@@ -118,51 +193,46 @@ class MapRecordPageOSMState extends State<MapRecordPageOSM> {
 
   @override
   void dispose() {
-    _firebaseSubscription.cancel();
-    mapController.dispose();
     _mounted = false;
+    _firebaseSubscriptionMe.cancel();
+    isUserBus
+        ? _firebaseSubscriptionUserBus.cancel()
+        : _firebaseSubscriptionBus.cancel();
+    mapController.dispose();
     super.dispose();
   }
 
   Future<void> getLocationIcon() async {
     firstDistanceLoaded(currentUserdata['distance'] ?? 0);
-    String busIconDynamic = busTopIconAsset;
-    String busOffIconDynamic = busTopOffIconAsset;
     if (currentUserdata['trackMe'] == true) {
       defaultIcon = currentUserdata['post'] == 'Driver'
-          ? busIconDynamic
+          ? busTopIconAsset
           : personIconAsset;
     } else {
       defaultIcon = currentUserdata['post'] == 'Driver'
-          ? busOffIconDynamic
+          ? busTopOffIconAsset
           : personOffIconAsset;
     }
   }
 
-  Future getCoordinatesByRootId() async {
-    DatabaseReference starCountRef = FirebaseDatabase.instance.ref('users');
-    _firebaseSubscription = starCountRef.onValue.listen((DatabaseEvent event) {
-      Map<dynamic, dynamic> data =
-          event.snapshot.value as Map<dynamic, dynamic>;
-      allUserCompleteData = {};
-      data.forEach((key, value) {
-        if (value['route'] == data[user?.uid]['route']) {
-          if (key == currentUid) {
-            currentUserdata = value;
-          } else if (value['trackMe'] == true) {
-            allUserCompleteData.add({key: value});
-          }
-        }
-      });
-      if (_mounted) {
-        getLocationIcon();
-        updateOnScreenActive();
-        setState(() {});
-      }
-    });
-  }
-
   void getCurrentLocation() async {
+    bool serviceEnabled;
+    PermissionStatus permissionGranted;
+    serviceEnabled = await location.serviceEnabled();
+    if (!serviceEnabled) {
+      serviceEnabled = await location.requestService();
+      if (!serviceEnabled) {
+        return;
+      }
+    }
+    permissionGranted = await location.hasPermission();
+    if (permissionGranted == PermissionStatus.denied) {
+      permissionGranted = await location.requestPermission();
+      if (permissionGranted != PermissionStatus.granted) {
+        return;
+      }
+    }
+
     location.changeSettings(
         accuracy: LocationAccuracy.high, interval: 10, distanceFilter: 0);
     location.getLocation().then((value) {
@@ -179,14 +249,23 @@ class MapRecordPageOSMState extends State<MapRecordPageOSM> {
     location.onLocationChanged.listen((newLocation) async {
       currentLocationData = newLocation;
       speed = ((currentLocationData?.speed ?? 0) * speedBias).toInt();
-      firbaseClass.setMyCoordinates(currentLocationData!.latitude!.toString(),
-          currentLocationData!.longitude!.toString(), bearingMap);
+      if (currentUserdata['trackMe'] == true) {
+        firbaseClass.setMyCoordinatesOptimized(
+            currentLocationData!.latitude!.toString(),
+            currentLocationData!.longitude!.toString(),
+            bearingMap);
+      }
       myLocation = LatLng(setPrecision(currentLocationData!.latitude!, 3),
           setPrecision(currentLocationData!.longitude!, 3));
       currentLocationDataOld =
           await updateDistanceTravelled(currentLocationData);
-      if (_mounted) setState(() {});
+      if (_mounted) {
+        updateMakers();
+        mapCameraController();
+        setState(() {});
+      }
     });
+    await location.enableBackgroundMode(enable: isLocationBackground);
   }
 
   Future<LocationData?> updateDistanceTravelled(
@@ -198,8 +277,8 @@ class MapRecordPageOSMState extends State<MapRecordPageOSM> {
             currentLocationDataOld!.longitude!),
         LatLng(currentLocationData!.latitude!, currentLocationData.longitude!));
     if (recordingStart) {
-      distanceTravelled += meter / 1000;
-      await setTotalDistanceTravelled(firbaseClass, meter / 1000);
+      distanceTravelled += meter;
+      await setTotalDistanceTravelled(firbaseClass, meter);
     }
     currentLocationDataOld = currentLocationData;
     return currentLocationData; //now this will became old data.
@@ -225,11 +304,6 @@ class MapRecordPageOSMState extends State<MapRecordPageOSM> {
         });
       }
     });
-  }
-
-  void updateOnScreenActive() {
-    updateCoordinates();
-    mapCameraController();
   }
 
   Future<void> mapCameraController() async {
@@ -272,15 +346,46 @@ class MapRecordPageOSMState extends State<MapRecordPageOSM> {
     }
   }
 
-  void updateCoordinates() async {
-    markers = [];
+  Future showSelectedUserInfoPopup(String Uid) async {
+    DatabaseReference starCountRef =
+        FirebaseDatabase.instance.ref('users/$Uid');
+    starCountRef.onValue.listen((DatabaseEvent event) {
+      selectedUserdata = event.snapshot.value as Map<dynamic, dynamic>;
+      showDialog(
+        context: context,
+        builder: (BuildContext context) {
+          return AlertDialog(
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(16.0),
+              ),
+              title: Text(
+                  '${selectedUserdata['post']}: ${selectedUserdata['name']}'),
+              content: InkWell(
+                onTap: () {
+                  PopupSnackBar().makePhoneCall(selectedUserdata['phone']);
+                },
+                child: Text(
+                  'Call: ${selectedUserdata['phone']}',
+                  style: const TextStyle(
+                    fontSize: 16.0,
+                    color: Colors.blue,
+                  ),
+                ),
+              ));
+        },
+      );
+    });
+  }
+
+  void updateMakers() async {
+    if (currentLocationData == null) return;
     if (selectedUid.isNotEmpty) {
       var val = allUserCompleteData
           .firstWhere((element) => element.containsKey(selectedUid));
-      selectedUserdata = val[selectedUid];
-      destination = LatLng(double.parse(selectedUserdata['latitude']),
-          double.parse(selectedUserdata['longitude']));
+      destination = LatLng(double.parse(val[selectedUid]['latitude']),
+          double.parse(val[selectedUid]['longitude']));
     }
+    markers = [];
     markers.add(Marker(
         key: Key(user?.email as String),
         width: 50,
@@ -313,7 +418,7 @@ class MapRecordPageOSMState extends State<MapRecordPageOSM> {
     for (var element in allUserCompleteData) {
       element.forEach((key, value) async {
         String mapIcon =
-            value['post'] == 'Driver' ? busTopIconAsset : personIconAsset;
+            value['icon'] == 'bus' ? busTopIconAsset : personIconAsset;
         double netDirection =
             netRotationDirection(value['direction'] ?? 0, bearingMap);
         markers.add(Marker(
@@ -329,34 +434,11 @@ class MapRecordPageOSMState extends State<MapRecordPageOSM> {
                     icon: Image.asset(mapIcon),
                     onPressed: () {
                       selectedUid = key;
-                      selectedUserdata = value;
                       destination = LatLng(double.parse(value['latitude']),
                           double.parse(value['longitude']));
                       getPolyPoints();
                       focusDest = true;
-
-                      showDialog(
-                        context: context,
-                        builder: (BuildContext context) {
-                          return AlertDialog(
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(16.0),
-                              ),
-                              title: Text('${value['post']}: ${value['name']}'),
-                              content: InkWell(
-                                onTap: () {
-                                  PopupSnackBar().makePhoneCall(value['phone']);
-                                },
-                                child: Text(
-                                  'Call: ${value['phone']}',
-                                  style: const TextStyle(
-                                    fontSize: 16.0,
-                                    color: Colors.blue,
-                                  ),
-                                ),
-                              ));
-                        },
-                      );
+                      showSelectedUserInfoPopup(selectedUid);
                     },
                   ),
                 )));
@@ -373,6 +455,7 @@ class MapRecordPageOSMState extends State<MapRecordPageOSM> {
       setState(() {
         _selectedRoute = currentUserdata['route'];
         iconVisible = currentUserdata['trackMe'];
+        myRoute = _selectedRoute;
       });
     }
     if (isPolylineReady) {
@@ -380,6 +463,7 @@ class MapRecordPageOSMState extends State<MapRecordPageOSM> {
       getPolyPoints();
       Future.delayed(Duration(seconds: directionApiDelay), () {
         isPolylineReady = true;
+        if (infoUpdate) directionApiDelay = 30;
         if (_mounted) setState(() {});
       });
     }
@@ -401,7 +485,7 @@ class MapRecordPageOSMState extends State<MapRecordPageOSM> {
             Expanded(
               flex: 5,
               child: _selectedRoute.isNotEmpty
-                  ? ((currentUserdata['routeAccess'] == true)
+                  ? ((userRoute.isNotEmpty)
                       ? DropdownButton(
                           value: _selectedRoute,
                           items: userRoute.map((route) {
@@ -411,14 +495,17 @@ class MapRecordPageOSMState extends State<MapRecordPageOSM> {
                             );
                           }).toList(),
                           onChanged: (value) async {
+                            myOldRoute = _selectedRoute;
                             _selectedRoute = value ?? '';
-                            markers = [];
                             selectedUid = '';
                             infoUpdate = false;
                             polyline = [];
-                            if (_mounted) setState(() {});
-                            await firbaseClass.setRoute(_selectedRoute);
+                            myRoute = _selectedRoute;
                             getLocationIcon();
+                            updateMakers();
+                            await firbaseClass
+                                .setRouteOptimized(_selectedRoute);
+                            if (_mounted) setState(() {});
                           },
                         )
                       : Text(
@@ -432,7 +519,7 @@ class MapRecordPageOSMState extends State<MapRecordPageOSM> {
             Expanded(
               flex: 5,
               child: Text(
-                '${distanceTravelled.toStringAsFixed(2)}Km',
+                '${(distanceTravelled / 1000).toStringAsFixed(2)}Km',
                 textAlign: TextAlign.start,
                 style: const TextStyle(color: Colors.black, fontSize: 20.0),
               ),
@@ -502,10 +589,10 @@ class MapRecordPageOSMState extends State<MapRecordPageOSM> {
                         }
                         Future.delayed(const Duration(seconds: 2), () {
                           isLocationReady = true;
-                          setState(() {});
+                          if (_mounted) setState(() {});
                         });
                       }
-                      setState(() {});
+                      if (_mounted) setState(() {});
                     },
                     bounds: bounds,
                     rotation: netDirectionMyMap(bearingMap),

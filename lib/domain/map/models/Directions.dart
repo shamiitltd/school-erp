@@ -1,4 +1,3 @@
-
 import 'package:flutter_polyline_points/flutter_polyline_points.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:school_erp/domain/map/functions/Computational.dart';
@@ -23,10 +22,18 @@ class Directions {
     // Bounds
     final northeast = data['bounds']['northeast'];
     final southwest = data['bounds']['southwest'];
-    final bounds = LatLngBounds(
-      northeast: LatLng(northeast['lat'], northeast['lng']),
-      southwest: LatLng(southwest['lat'], southwest['lng']),
-    );
+    var bounds;
+    try {
+      bounds = LatLngBounds(
+        northeast: LatLng(northeast['lat'], northeast['lng']),
+        southwest: LatLng(southwest['lat'], southwest['lng']),
+      );
+    } catch (e) {
+      bounds = LatLngBounds(
+        northeast: LatLng(southwest['lat'], southwest['lng']),
+        southwest: LatLng(northeast['lat'], northeast['lng']),
+      );
+    }
 
     // Distance & Duration
     String distance = '';
@@ -40,12 +47,11 @@ class Directions {
     return Directions(
       bounds: bounds,
       polylinePoints:
-      PolylinePoints().decodePolyline(data['overview_polyline']['points']),
+          PolylinePoints().decodePolyline(data['overview_polyline']['points']),
       totalDistance: distance,
       totalDuration: duration,
     );
   }
-
 
   factory Directions.fromOsmMap(Map<String, dynamic> map) {
     List<PointLatLng> polylinePointLatLang = [];
@@ -57,10 +63,18 @@ class Directions {
     }
     final northeast = map['waypoints'][0]['location'];
     final southwest = map['waypoints'][1]['location'];
-    final bounds = LatLngBounds(
-      northeast: LatLng(northeast[1], northeast[0]),
-      southwest: LatLng(southwest[1], southwest[0]),
-    );
+    var bounds;
+    try {
+      bounds = LatLngBounds(
+        northeast: LatLng(northeast[1], northeast[0]),
+        southwest: LatLng(southwest[1], southwest[0]),
+      );
+    } catch (e) {
+      bounds = LatLngBounds(
+        northeast: LatLng(southwest[1], southwest[0]),
+        southwest: LatLng(northeast[1], northeast[0]),
+      );
+    }
 
     // Distance & Duration
     final durationVal = result['duration'];
@@ -70,7 +84,7 @@ class Directions {
 
     return Directions(
       bounds: bounds,
-      polylinePoints:polylinePointLatLang,
+      polylinePoints: polylinePointLatLang,
       totalDistance: distance,
       totalDuration: duration,
     );

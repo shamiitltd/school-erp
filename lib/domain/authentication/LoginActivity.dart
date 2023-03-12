@@ -4,6 +4,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:school_erp/config/StaticConstants.dart';
 import 'package:school_erp/domain/authentication/widgets/LoginWidget.dart';
+import 'package:school_erp/pages/HomePage.dart';
 import 'package:school_erp/pages/home.dart';
 
 class LoginActivity extends StatefulWidget {
@@ -46,7 +47,7 @@ class _LoginActivityState extends State<LoginActivity> {
             return const Center(child: Text('Something went Wrong!'));
           }
           else if(snapshot.hasData){
-            return const MyHomePage(title: 'School ERP by SHAMIIT');
+            return const HomePage(title: 'School ERP by SHAMIIT');
           }else{
             return const LoginWidget();
           }

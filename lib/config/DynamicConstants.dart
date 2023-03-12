@@ -35,8 +35,8 @@ bool isSettingOpen = false;
 
 String busIconUrl = 'https://learn.geekspool.com/wp-content/uploads/mapicons/bus.png';
 String personIconUrl = 'https://learn.geekspool.com/wp-content/uploads/mapicons/person.png';
-List<String> userPosts = ['Student', 'Driver', 'Teacher', 'Principle', 'Director',];
-List<String> userRoute = ['R1', 'R2', 'R3', 'A1', 'C3',];
+List<String> userPosts = [];
+List<String> userRoute = [];
 enum DrawerSections {
   dashboard,
   chat,

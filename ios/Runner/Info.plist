@@ -60,6 +60,21 @@
         <string>sms</string>
         <string>tel</string>
     </array>
+    <key>NSPhotoLibraryUsageDescription</key>
+    <string>Allow access to photos and videos</string>
+    <key>NSCameraUsageDescription</key>
+    <string>Allow access to camera</string>
+    <key>NSMicrophoneUsageDescription</key>
+    <string>Allow access to microphone</string>
+    <key>NSAppTransportSecurity</key>
+    <dict>
+        <key>NSAllowsArbitraryLoads</key><true/>
+    </dict>
+    <!-- changes this number to configure the maximum number of concurrent tasks -->
+    <key>FDMaximumConcurrentTasks</key>
+    <integer>5</integer>
+    <key>FDAllFilesDownloadedMessage</key>
+    <string>All files have been downloaded</string>
 
 </dict>
 </plist>
