@@ -44,6 +44,7 @@ enum DrawerSections {
   fee,
   settings,
   notifications,
+  visitors,
   send_feedback,
   profile,
   dummy, logout

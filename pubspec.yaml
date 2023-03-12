@@ -52,12 +52,14 @@ dependencies:
   flutter_compass: ^0.7.0
   motion_sensors: ^0.1.0
   flutter_map: ^3.1.0
+  camera: ^0.10.0+1
+  cloud_firestore: ^4.4.3
+  image_picker: ^0.8.6+4
+  firebase_storage: ^11.0.14
   path_provider: ^2.0.13
   flutter_inappwebview: ^5.7.2+3
   permission_handler: ^10.2.0
   flutter_downloader: ^1.10.2
-
-
 
 
 
