@@ -70,5 +70,11 @@
     <dict>
         <key>NSAllowsArbitraryLoads</key><true/>
     </dict>
+    <!-- changes this number to configure the maximum number of concurrent tasks -->
+    <key>FDMaximumConcurrentTasks</key>
+    <integer>5</integer>
+    <key>FDAllFilesDownloadedMessage</key>
+    <string>All files have been downloaded</string>
+
 </dict>
 </plist>

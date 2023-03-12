@@ -23,14 +23,21 @@ class _HomePageState extends State<HomePage> {
   final user = FirebaseAuth.instance.currentUser;
   var currentPage = DrawerSections.dashboard;
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
-  int count =0;
+  int count = 0;
   double navTopPadding = 60;
+  String firebasePath = '';
+  var container;
 
-  @override
-  Future<void> initState() async {
-    super.initState();
+  Future<void> permissions() async {
     await Permission.camera.request();
     await Permission.microphone.request();
+    await Permission.storage.request();
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    permissions();
   }
 
   void _onItemTapped(int index) {
@@ -41,7 +48,7 @@ class _HomePageState extends State<HomePage> {
         // navTopPadding=20;
         if (index == 0) {
           currentPage = DrawerSections.dashboard;
-          navTopPadding =60;
+          navTopPadding = 60;
         } else if (index == 1) {
           currentPage = DrawerSections.chat;
         } else if (index == 2) {
@@ -56,34 +63,41 @@ class _HomePageState extends State<HomePage> {
     }
   }
 
-  @override
-  Widget build(BuildContext context) {
-    // getCurrentLocation();
-    var container;
+  void updateDrawerSections() {
     if (currentPage == DrawerSections.dashboard) {
-      container = WebViewExample();
+      firebasePath = "erpDashboard";
+      container = WebViewExample(firebasePath: firebasePath);
     } else if (currentPage == DrawerSections.chat) {
-      container = ChatActivity();
-    }  else if (currentPage == DrawerSections.fee) {
+      firebasePath = "erpChat";
+      container = WebViewExample(firebasePath: firebasePath);
+    } else if (currentPage == DrawerSections.fee) {
       container = FeeActivity();
-    }  else if (currentPage == DrawerSections.trackbus) {
+    } else if (currentPage == DrawerSections.trackbus) {
       container = MapHomePage();
     } else if (currentPage == DrawerSections.settings) {
       container = ProfileActivity();
     } else if (currentPage == DrawerSections.notifications) {
       container = FeeActivity();
     } else if (currentPage == DrawerSections.send_feedback) {
-      container = WebViewExample();
+      firebasePath = "erpInfo";
+      container = WebViewExample(firebasePath: firebasePath);
     } else if (currentPage == DrawerSections.profile) {
-      container = ProfileActivity();
+      firebasePath = "erpProfile";
+      container = WebViewExample(firebasePath: firebasePath);
     } else if (currentPage == DrawerSections.logout) {
       FirebaseAuth.instance.signOut();
-    }else{
+    } else {
       container = const Text('Empty');
     }
+    setState(() {});
+  }
 
+  @override
+  Widget build(BuildContext context) {
+    // getCurrentLocation();
+    updateDrawerSections();
     return WillPopScope(
-      onWillPop: () async{
+      onWillPop: () async {
         return Future.value(true);
         // setState(() {
         //   count++;
@@ -109,15 +123,14 @@ class _HomePageState extends State<HomePage> {
           endDrawerEnableOpenDragGesture: true,
           body: SafeArea(child: container),
           floatingActionButton: favoriteButton(navTopPadding),
-          floatingActionButtonLocation: FloatingActionButtonLocation
-              .endTop,
+          floatingActionButtonLocation: FloatingActionButtonLocation.endTop,
           floatingActionButtonAnimator: FloatingActionButtonAnimator.scaling,
-
           bottomNavigationBar:
-          BottomNavBar() // This trailing comma makes auto-formatting nicer for build methods.
-      ),
+              BottomNavBar() // This trailing comma makes auto-formatting nicer for build methods.
+          ),
     );
   }
+
   Widget favoriteButton(double navTopPadding) {
     return Padding(
       padding: EdgeInsets.only(top: navTopPadding),
@@ -131,6 +144,7 @@ class _HomePageState extends State<HomePage> {
       ),
     );
   }
+
   Widget MyDrawerList() {
     return Container(
       child: Column(
@@ -189,7 +203,8 @@ class _HomePageState extends State<HomePage> {
               } else if (id == 5) {
                 currentPage = DrawerSections.settings;
                 Navigator.of(context).push(MaterialPageRoute(
-                  builder: (context) => const WebViewExample(),
+                  builder: (context) =>
+                      const WebViewExample(firebasePath: 'erpDashboard'),
                 ));
               } else if (id == 6) {
                 currentPage = DrawerSections.notifications;
@@ -258,7 +273,7 @@ class _HomePageState extends State<HomePage> {
       ],
       currentIndex: selectedIndex,
       selectedItemColor:
-      sepFlag == 0 ? Colors.deepOrange[deepColor] : Colors.white,
+          sepFlag == 0 ? Colors.deepOrange[deepColor] : Colors.white,
       onTap: _onItemTapped,
     );
   }

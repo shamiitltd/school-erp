@@ -64,7 +64,7 @@ class _MyHomePageState extends State<MyHomePage> {
     } else if (currentPage == DrawerSections.notifications) {
       container = FeeActivity();
     } else if (currentPage == DrawerSections.send_feedback) {
-      container = WebViewExample();
+      container = const WebViewExample(firebasePath: "erpDashboard");
     } else if (currentPage == DrawerSections.profile) {
       container = ProfileActivity();
     } else if (currentPage == DrawerSections.logout) {
@@ -150,7 +150,7 @@ class _MyHomePageState extends State<MyHomePage> {
               } else if (id == 5) {
                 currentPage = DrawerSections.settings;
                 Navigator.of(context).push(MaterialPageRoute(
-                  builder: (context) => const WebViewExample(),
+                    builder: (context) => const WebViewExample(firebasePath: "erpDashboard"),
                 ));
               } else if (id == 6) {
                 currentPage = DrawerSections.notifications;

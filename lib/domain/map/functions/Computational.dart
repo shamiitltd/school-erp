@@ -68,6 +68,7 @@ Future<bool> locationPermission() async {
       return false;
     }
   }
+  await location.enableBackgroundMode(enable: isLocationBackground);
   return true;
 }
 
