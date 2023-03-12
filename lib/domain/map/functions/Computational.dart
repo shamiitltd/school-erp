@@ -4,8 +4,6 @@ import 'dart:math';
 import 'package:flutter_polyline_points/flutter_polyline_points.dart';
 import 'package:location/location.dart';
 import 'package:school_erp/config/DynamicConstants.dart';
-import 'package:school_erp/config/StaticConstants.dart';
-import 'package:school_erp/domain/map/functions/RealTimeDb.dart';
 import 'package:school_erp/shared/functions/Computational.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
@@ -70,24 +68,17 @@ Future<bool> locationPermission() async {
       return false;
     }
   }
-  await location.enableBackgroundMode(enable: isLocationBackground);
   return true;
 }
 
 
-void getCurrentLocation() async {
+void getCurrentLocation(dynamic firebaseClass) async {
   if(!await locationPermission()) return;
   Location location = Location();
   location.changeSettings(
       accuracy: LocationAccuracy.high, interval: 10, distanceFilter: 0);
   location.getLocation().then((newLocation) {
-    MapFirebase().setMyCoordinates(newLocation.latitude!.toString(),
-        newLocation.longitude!.toString(), bearingMap);
-  });
-
-  location.onLocationChanged.listen((newLocation) async {
-    // speed = ((newLocation.speed??0)*speedBias).toInt();
-    MapFirebase().setMyCoordinates(newLocation.latitude!.toString(),
+    firebaseClass.setMyCoordinatesOptimized(newLocation.latitude!.toString(),
         newLocation.longitude!.toString(), bearingMap);
   });
 }

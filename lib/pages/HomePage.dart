@@ -1,31 +1,43 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:permission_handler/permission_handler.dart';
 import 'package:school_erp/config/Colors.dart';
 import 'package:school_erp/config/DynamicConstants.dart';
 import 'package:school_erp/domain/erpwebsite/ErpWebView.dart';
 import 'package:school_erp/domain/map/MapHome.dart';
 import 'package:school_erp/domain/map/RecordRoute.dart';
-import 'package:school_erp/pages/dashboard.dart';
 import 'package:school_erp/pages/chat.dart';
 import 'package:school_erp/pages/fee.dart';
 import 'package:school_erp/pages/profile.dart';
 import 'package:school_erp/res/assets_res.dart';
 
-class MyHomePage extends StatefulWidget {
-  const MyHomePage({super.key, required this.title});
+class HomePage extends StatefulWidget {
+  const HomePage({super.key, required this.title});
   final String title;
 
   @override
-  State<MyHomePage> createState() => _MyHomePageState();
+  State<HomePage> createState() => _HomePageState();
 }
 
-class _MyHomePageState extends State<MyHomePage> {
+class _HomePageState extends State<HomePage> {
   final user = FirebaseAuth.instance.currentUser;
   var currentPage = DrawerSections.dashboard;
+  final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
+  int count = 0;
+  double navTopPadding = 60;
+  String firebasePath = '';
+  var container;
+
+  Future<void> permissions() async {
+    await Permission.camera.request();
+    await Permission.microphone.request();
+    await Permission.storage.request();
+  }
 
   @override
   void initState() {
     super.initState();
+    permissions();
   }
 
   void _onItemTapped(int index) {
@@ -33,63 +45,104 @@ class _MyHomePageState extends State<MyHomePage> {
       setState(() {
         sepFlag = 0;
         selectedIndex = index;
+        // navTopPadding=20;
         if (index == 0) {
           currentPage = DrawerSections.dashboard;
+          navTopPadding = 60;
         } else if (index == 1) {
           currentPage = DrawerSections.chat;
         } else if (index == 2) {
           currentPage = DrawerSections.profile;
         } else if (index == 3) {
           currentPage = DrawerSections.trackbus;
-          Navigator.of(context).push(MaterialPageRoute(
-            builder: (context) => const MapHomePage(),
-          ));
+          // Navigator.of(context).push(MaterialPageRoute(
+          //   builder: (context) => const MapHomePage(),
+          // ));
         }
       });
     }
   }
 
-  @override
-  Widget build(BuildContext context) {
-    // getCurrentLocation();
-    var container;
+  void updateDrawerSections() {
     if (currentPage == DrawerSections.dashboard) {
-      container = Dashboard();
+      firebasePath = "erpDashboard";
+      container = WebViewExample(firebasePath: firebasePath);
     } else if (currentPage == DrawerSections.chat) {
-      container = ChatActivity();
-    }  else if (currentPage == DrawerSections.fee) {
+      firebasePath = "erpChat";
+      container = WebViewExample(firebasePath: firebasePath);
+    } else if (currentPage == DrawerSections.fee) {
       container = FeeActivity();
+    } else if (currentPage == DrawerSections.trackbus) {
+      container = MapHomePage();
     } else if (currentPage == DrawerSections.settings) {
       container = ProfileActivity();
     } else if (currentPage == DrawerSections.notifications) {
       container = FeeActivity();
     } else if (currentPage == DrawerSections.send_feedback) {
-      container = const WebViewExample(firebasePath: "erpDashboard");
+      firebasePath = "erpInfo";
+      container = WebViewExample(firebasePath: firebasePath);
     } else if (currentPage == DrawerSections.profile) {
-      container = ProfileActivity();
+      firebasePath = "erpProfile";
+      container = WebViewExample(firebasePath: firebasePath);
     } else if (currentPage == DrawerSections.logout) {
       FirebaseAuth.instance.signOut();
-    }else{
+    } else {
       container = const Text('Empty');
     }
+    setState(() {});
+  }
 
-    return Scaffold(
-        appBar: AppBar(
-          // leading: Icon(Icons.menu),
-          title: Text(widget.title),
-        ),
-        drawer: Drawer(
-          child: SingleChildScrollView(
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.start,
-              children: <Widget>[MyHeaderDrawer(), MyDrawerList()],
+  @override
+  Widget build(BuildContext context) {
+    // getCurrentLocation();
+    updateDrawerSections();
+    return WillPopScope(
+      onWillPop: () async {
+        return Future.value(true);
+        // setState(() {
+        //   count++;
+        // });
+        // print('Home Page');
+        // print(count);
+        // if(count > 2){
+        //   return Future.value(true);
+        // }else{
+        //   return Future.value(false);
+        // }
+      },
+      child: Scaffold(
+          key: _scaffoldKey,
+          endDrawer: Drawer(
+            child: SingleChildScrollView(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.start,
+                children: <Widget>[MyHeaderDrawer(), MyDrawerList()],
+              ),
             ),
           ),
-        ),
-        body: container,
-        bottomNavigationBar:
-            BottomNavBar() // This trailing comma makes auto-formatting nicer for build methods.
-        );
+          endDrawerEnableOpenDragGesture: true,
+          body: SafeArea(child: container),
+          floatingActionButton: favoriteButton(navTopPadding),
+          floatingActionButtonLocation: FloatingActionButtonLocation.endTop,
+          floatingActionButtonAnimator: FloatingActionButtonAnimator.scaling,
+          bottomNavigationBar:
+              BottomNavBar() // This trailing comma makes auto-formatting nicer for build methods.
+          ),
+    );
+  }
+
+  Widget favoriteButton(double navTopPadding) {
+    return Padding(
+      padding: EdgeInsets.only(top: navTopPadding),
+      child: FloatingActionButton(
+        mini: true,
+        shape: BeveledRectangleBorder(borderRadius: BorderRadius.circular(5)),
+        onPressed: () async {
+          _scaffoldKey.currentState?.openEndDrawer();
+        },
+        child: const Icon(Icons.menu),
+      ),
+    );
   }
 
   Widget MyDrawerList() {
@@ -144,13 +197,14 @@ class _MyHomePageState extends State<MyHomePage> {
                 currentPage = DrawerSections.fee;
               } else if (id == 4) {
                 currentPage = DrawerSections.trackbus;
-                Navigator.of(context).push(MaterialPageRoute(
-                  builder: (context) => const MapHomePage(),
-                ));
+                // Navigator.of(context).push(MaterialPageRoute(
+                //   builder: (context) => const MapHomePage(),
+                // ));
               } else if (id == 5) {
                 currentPage = DrawerSections.settings;
                 Navigator.of(context).push(MaterialPageRoute(
-                    builder: (context) => const WebViewExample(firebasePath: "erpDashboard"),
+                  builder: (context) =>
+                      const WebViewExample(firebasePath: 'erpDashboard'),
                 ));
               } else if (id == 6) {
                 currentPage = DrawerSections.notifications;
@@ -219,7 +273,7 @@ class _MyHomePageState extends State<MyHomePage> {
       ],
       currentIndex: selectedIndex,
       selectedItemColor:
-      sepFlag == 0 ? Colors.deepOrange[deepColor] : Colors.white,
+          sepFlag == 0 ? Colors.deepOrange[deepColor] : Colors.white,
       onTap: _onItemTapped,
     );
   }
