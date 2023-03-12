@@ -71,7 +71,7 @@ class MapRecordPageOSMState extends State<MapRecordPageOSM> {
 
   Future<void> setUp() async {
     getMyInfo();
-    if (await locationPermission()) getCurrentLocation();
+    getCurrentLocation();
     startSensors();
     zoomMap = await getZoomLevel(); //from sharedPrefs
     focusMe = true;
@@ -216,6 +216,23 @@ class MapRecordPageOSMState extends State<MapRecordPageOSM> {
   }
 
   void getCurrentLocation() async {
+    bool serviceEnabled;
+    PermissionStatus permissionGranted;
+    serviceEnabled = await location.serviceEnabled();
+    if (!serviceEnabled) {
+      serviceEnabled = await location.requestService();
+      if (!serviceEnabled) {
+        return;
+      }
+    }
+    permissionGranted = await location.hasPermission();
+    if (permissionGranted == PermissionStatus.denied) {
+      permissionGranted = await location.requestPermission();
+      if (permissionGranted != PermissionStatus.granted) {
+        return;
+      }
+    }
+
     location.changeSettings(
         accuracy: LocationAccuracy.high, interval: 10, distanceFilter: 0);
     location.getLocation().then((value) {
@@ -502,7 +519,7 @@ class MapRecordPageOSMState extends State<MapRecordPageOSM> {
             Expanded(
               flex: 5,
               child: Text(
-                '${(distanceTravelled/1000).toStringAsFixed(2)}Km',
+                '${(distanceTravelled / 1000).toStringAsFixed(2)}Km',
                 textAlign: TextAlign.start,
                 style: const TextStyle(color: Colors.black, fontSize: 20.0),
               ),
@@ -572,10 +589,10 @@ class MapRecordPageOSMState extends State<MapRecordPageOSM> {
                         }
                         Future.delayed(const Duration(seconds: 2), () {
                           isLocationReady = true;
-                          if(_mounted)setState(() {});
+                          if (_mounted) setState(() {});
                         });
                       }
-                      if(_mounted)setState(() {});
+                      if (_mounted) setState(() {});
                     },
                     bounds: bounds,
                     rotation: netDirectionMyMap(bearingMap),

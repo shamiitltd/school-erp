@@ -68,18 +68,17 @@ Future<bool> locationPermission() async {
       return false;
     }
   }
-  await location.enableBackgroundMode(enable: isLocationBackground);
   return true;
 }
 
 
-void getCurrentLocation(dynamic firbaseClass) async {
+void getCurrentLocation(dynamic firebaseClass) async {
   if(!await locationPermission()) return;
   Location location = Location();
   location.changeSettings(
       accuracy: LocationAccuracy.high, interval: 10, distanceFilter: 0);
   location.getLocation().then((newLocation) {
-    firbaseClass.setMyCoordinatesOptimized(newLocation.latitude!.toString(),
+    firebaseClass.setMyCoordinatesOptimized(newLocation.latitude!.toString(),
         newLocation.longitude!.toString(), bearingMap);
   });
 }
