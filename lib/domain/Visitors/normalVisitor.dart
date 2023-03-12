@@ -21,13 +21,13 @@ class _ViewVisitorsState extends State<ViewVisitors> {
           stream: visitors.orderBy('timestamp', descending: true).snapshots(),
           builder: (BuildContext context, AsyncSnapshot<QuerySnapshot> snapshot) {
             if (snapshot.hasError) {
-              return const Text('Something went wrong');
+              return const Center(child: Text('Something went wrong'));
             }else{
 
             }
 
             if (snapshot.connectionState == ConnectionState.waiting) {
-              return const CircularProgressIndicator();
+              return const Center(child: CircularProgressIndicator());
             }
 
             return ListView(
