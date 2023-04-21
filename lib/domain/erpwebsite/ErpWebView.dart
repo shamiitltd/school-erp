@@ -172,8 +172,10 @@ class _WebViewExampleState extends State<WebViewExample> {
                 loadingPercentage = 100;
                 if (!isLoggedIn) {
                   isLoggedIn = true;
-                  inAppWebViewController?.loadUrl(
+                  if(!url.toString().contains('dashboard')) {
+                    inAppWebViewController?.loadUrl(
                       urlRequest: URLRequest(url: Uri.parse(afterLoginUrl)));
+                  }
                 }
                 setState(() {});
               },
@@ -183,8 +185,10 @@ class _WebViewExampleState extends State<WebViewExample> {
                   isInternet = false;
                   if (!isLoggedIn) {
                     isLoggedIn = true;
-                    inAppWebViewController?.loadUrl(
+                    if(!url.toString().contains('dashboard')) {
+                      inAppWebViewController?.loadUrl(
                         urlRequest: URLRequest(url: Uri.parse(afterLoginUrl)));
+                    }
                   }
                   setState(() {});
                 }
