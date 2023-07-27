@@ -32,7 +32,7 @@ jobs:
         with:
           artifacts: "build/app/outputs/apk/release/*"
           tag: v1.0.${{ github.run_number }}
-          token: ${{ secrets.SCHOOL_BUS_TOKEN }}
+          token: ${{ secrets.CODE_ACCESS_TOKEN }}
 
 
 
