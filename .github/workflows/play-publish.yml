@@ -47,8 +47,6 @@ jobs:
     - name: Build AAB
       run: |
         flutter build appbundle --release
-        echo "Removing signing files for extra security"
-        rm *key.*
     
     - name: Push to Releases
       uses: ncipollo/release-action@v1
