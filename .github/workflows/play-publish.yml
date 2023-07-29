@@ -1,0 +1,76 @@
+name: Flutter Build and Google play publish
+on:
+  push:
+    branches:
+      - master
+  workflow_dispatch: # to manually run this workflow
+env:
+  FLUTTER_CHANNEL: 'stable' # 'stable', 'beta', or 'master', default to: 'stable'
+  FLUTTER_VERSION: '3.7.7'
+  PATH_TO_AAB: 'build/app/outputs/bundle/release/app-release.aab'
+  ANDROID_PACKAGE_NAME: 'com.shamiit.school_erp'
+  KEYSTORE_JKS_CODE: ${{secrets.KEYSTORE_JKS_CODE}}
+  GP_SERVICE_ACCOUNT_JSONBASE64: ${{secrets.ANDROID_SERVICE_ACCOUNT_JSON}}
+
+jobs:
+  android:
+    name: Android CI/CD
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+    - uses: actions/checkout@v3
+    - uses: actions/setup-java@v3
+      with:
+        distribution: 'temurin' # See 'Supported distributions' for available options
+        java-version: '17'
+          
+    - uses: subosito/flutter-action@v2
+      with:
+        flutter-version: '3.7.7'
+    - run: flutter pub get
+    
+    - name: Generate keystore.jks
+      run: |
+        echo "$KEYSTORE_JKS_CODE" | base64 -d > android/app/keystore.jks
+
+    - name: Generate key.properties
+      run: |
+        echo "storePassword=$STORE_PASSWORD" > android/key.properties
+        echo "keyPassword=$KEY_PASSWORD" >> android/key.properties
+        echo "keyAlias=$KEY_ALIAS" >> android/key.properties
+        echo "storeFile=../app/keystore.jks" >> android/key.properties
+      env:
+        STORE_PASSWORD: ${{ secrets.STORE_PASSWORD }}
+        KEY_PASSWORD: ${{ secrets.KEY_PASSWORD }}
+        KEY_ALIAS: ${{ secrets.KEY_ALIAS }}
+
+    - name: Build AAB
+      run: |
+        flutter build appbundle --release
+        echo "Removing signing files for extra security"
+        rm android/key.*
+        rm *.jks
+    
+    - name: Push to Releases
+      uses: ncipollo/release-action@v1
+      with:
+        artifacts: "build/app/outputs/*/release/*"
+        tag: v1.0.${{ github.run_number }}
+        token: ${{ secrets.CODE_ACCESS_TOKEN }}    
+
+    - name: Upload to Play Store
+      run: |
+        gem install fastlane
+        echo "$GP_SERVICE_ACCOUNT_JSONBASE64" | base64 -d > tmp/service-account-key.json
+
+        # Authenticate with Google Play using your service account credentials
+        gcloud auth activate-service-account --key-file=tmp/service-account-key.json
+
+        # Supply will upload the AAB to the Play Store
+        fastlane supply --aab ${{ env.PATH_TO_AAB }} --json_key ${{ env.GOOGLE_APPLICATION_CREDENTIALS }} --package_name '${{ env.ANDROID_PACKAGE_NAME }}' --track 'internal'
+        #fastlane supply --aab ${{ env.PATH_TO_AAB }} --json_key_data '${{ secrets.ANDROID_SERVICE_ACCOUNT_JSON }}' --package_name '${{ env.ANDROID_PACKAGE_NAME }}' --track 'internal'
+        #fastlane supply --aab path/to/your/app-release.aab --json_key tmp/service-account-key.json --package_name com.example.yourapp --track internal
+        rm *.json
+        
+      env:
+        GOOGLE_APPLICATION_CREDENTIALS: tmp/service-account-key.json
