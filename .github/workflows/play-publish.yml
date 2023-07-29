@@ -67,7 +67,6 @@ jobs:
         fastlane supply --aab ${{ env.PATH_TO_AAB }} --json_key ${{ env.GOOGLE_APPLICATION_CREDENTIALS }} --package_name '${{ env.ANDROID_PACKAGE_NAME }}' --track 'internal'
         #fastlane supply --aab ${{ env.PATH_TO_AAB }} --json_key_data '${{ secrets.ANDROID_SERVICE_ACCOUNT_JSON }}' --package_name '${{ env.ANDROID_PACKAGE_NAME }}' --track 'internal'
         #fastlane supply --aab path/to/your/app-release.aab --json_key tmp/service-account-key.json --package_name com.example.yourapp --track internal
-        rm *.json
         
       env:
         GOOGLE_APPLICATION_CREDENTIALS: tmp/service-account-key.json
