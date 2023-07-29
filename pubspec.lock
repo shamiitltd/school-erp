@@ -248,7 +248,7 @@ packages:
       sha256: "865dc4cbb0c3d64dedfbedf425abb065174096b17ad5b7fc287eca20889235ee"
       url: "https://pub.dev"
     source: hosted
-    version: "0.2.1+22"
+    version: "0.2.1+23"
   firebase_storage:
     dependency: "direct main"
     description:
@@ -272,7 +272,7 @@ packages:
       sha256: "28e2c6317214f63af56b1b3f2907d168534a7629ec24269b036556f399063d5a"
       url: "https://pub.dev"
     source: hosted
-    version: "0.2.1+23"
+    version: "3.3.23"
   flutter:
     dependency: "direct main"
     description: flutter
