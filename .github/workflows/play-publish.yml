@@ -31,14 +31,14 @@ jobs:
     
     - name: Generate keystore.jks
       run: |
-        echo "$KEYSTORE_JKS_CODE" | base64 -d > android/app/keystore.jks
+        echo "$KEYSTORE_JKS_CODE" | base64 -d > android/app/key.jks
 
     - name: Generate key.properties
       run: |
         echo "storePassword=$STORE_PASSWORD" > android/key.properties
         echo "keyPassword=$KEY_PASSWORD" >> android/key.properties
         echo "keyAlias=$KEY_ALIAS" >> android/key.properties
-        echo "storeFile=../app/keystore.jks" >> android/key.properties
+        echo "storeFile=../app/key.jks" >> android/key.properties
       env:
         STORE_PASSWORD: ${{ secrets.STORE_PASSWORD }}
         KEY_PASSWORD: ${{ secrets.KEY_PASSWORD }}
@@ -48,8 +48,7 @@ jobs:
       run: |
         flutter build appbundle --release
         echo "Removing signing files for extra security"
-        rm android/key.*
-        rm *.jks
+        rm *key.*
     
     - name: Push to Releases
       uses: ncipollo/release-action@v1
