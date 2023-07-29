@@ -57,7 +57,7 @@ jobs:
 
     - name: Upload to Play Store
       run: |
-        gem install fastlane
+        # gem install fastlane
         echo "$GP_SERVICE_ACCOUNT_JSONBASE64" | base64 -d > tmp/service-account-key.json
 
         # Authenticate with Google Play using your service account credentials
