@@ -58,7 +58,7 @@ jobs:
     - name: Upload to Play Store
       run: |
         #gem install fastlane
-        echo "$GP_SERVICE_ACCOUNT_JSONBASE64" | base64 -d > tmp/service-account-key.json
+        #echo "$GP_SERVICE_ACCOUNT_JSONBASE64" | base64 -d > tmp/service-account-key.json
 
         # Authenticate with Google Play using your service account credentials
         #gcloud auth activate-service-account --key-file=tmp/service-account-key.json
@@ -67,6 +67,3 @@ jobs:
         #fastlane supply --aab ${{ env.PATH_TO_AAB }} --json_key ${{ env.GOOGLE_APPLICATION_CREDENTIALS }} --package_name '${{ env.ANDROID_PACKAGE_NAME }}' --track 'internal'
         fastlane supply --aab ${{ env.PATH_TO_AAB }} --json_key_data '${{ secrets.ANDROID_SERVICE_ACCOUNT_JSON }}' --package_name '${{ env.ANDROID_PACKAGE_NAME }}' --track 'internal'
         #fastlane supply --aab path/to/your/app-release.aab --json_key tmp/service-account-key.json --package_name com.example.yourapp --track internal
-        
-      env:
-        GOOGLE_APPLICATION_CREDENTIALS: tmp/service-account-key.json
