@@ -1,8 +1,8 @@
-name: Flutter Build and Google play publish
+name: Build and Release internal publish
 on:
   push:
     branches:
-      - master
+      - internal
   workflow_dispatch: # to manually run this workflow
 env:
   FLUTTER_CHANNEL: 'stable' # 'stable', 'beta', or 'master', default to: 'stable'
@@ -13,7 +13,7 @@ env:
 
 jobs:
   android:
-    name: Android CI/CD
+    name: Android CI/CD internal
     runs-on: ubuntu-latest
     timeout-minutes: 30
     steps:
