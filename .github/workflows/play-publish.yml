@@ -10,7 +10,6 @@ env:
   PATH_TO_AAB: 'build/app/outputs/bundle/release/app-release.aab'
   ANDROID_PACKAGE_NAME: 'com.shamiit.school_erp'
   KEYSTORE_JKS_CODE: ${{secrets.KEYSTORE_JKS_CODE}}
-  GP_SERVICE_ACCOUNT_JSONBASE64: ${{secrets.ANDROID_SERVICE_ACCOUNT_JSON}}
 
 jobs:
   android:
@@ -55,15 +54,18 @@ jobs:
         tag: v1.0.${{ github.run_number }}
         token: ${{ secrets.CODE_ACCESS_TOKEN }}    
 
+
+    - name: Decode Android Service Account JSON
+      run: echo "$ANDROID_SERVICE_ACCOUNT_JSON" | base64 -d > key.json
+      env:
+        ANDROID_SERVICE_ACCOUNT_JSON: ${{ secrets.ANDROID_SERVICE_ACCOUNT_JSON }}
+
     - name: Upload to Play Store
       run: |
-        #gem install fastlane
-        #echo "$GP_SERVICE_ACCOUNT_JSONBASE64" | base64 -d > tmp/service-account-key.json
-
-        # Authenticate with Google Play using your service account credentials
-        #gcloud auth activate-service-account --key-file=tmp/service-account-key.json
-
         # Supply will upload the AAB to the Play Store
-        fastlane supply --aab ${{ env.PATH_TO_AAB }} --json_key ${{ secrets.ANDROID_SERVICE_ACCOUNT_JSON }} --package_name '${{ env.ANDROID_PACKAGE_NAME }}' --track 'internal'
-        #fastlane supply --aab ${{ env.PATH_TO_AAB }} --json_key_data '${{ secrets.ANDROID_SERVICE_ACCOUNT_JSON_BASE64 }}' --package_name '${{ env.ANDROID_PACKAGE_NAME }}' --track 'internal'
-        #fastlane supply --aab path/to/your/app-release.aab --json_key tmp/service-account-key.json --package_name com.example.yourapp --track internal
+        fastlane supply --aab ${{ env.PATH_TO_AAB }} --json_key key.json --package_name '${{ env.ANDROID_PACKAGE_NAME }}' --track 'internal'
+      
+
+
+
+
