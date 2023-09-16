@@ -1,0 +1,34 @@
+name: "Deploy application in multi env"
+on:
+  workflow_dispatch: # to manually run this workflow
+  
+jobs:
+  DEVELOPMENT:
+    name: Deploy in DEV
+    runs-on: ubuntu-latest
+    environment: DEV
+    steps:
+      - uses: actions/checkout@v3
+      - name: Run a script
+        run: |
+          echo "${{ secrets.FTP_SERVER }}"
+
+  QUALITYANALYSIS:
+    name: Deploy in QA
+    runs-on: ubuntu-latest
+    environment: QA
+    steps:
+      - uses: actions/checkout@v3
+      - name: Run a script
+        run: |
+          echo "${{ secrets.FTP_SERVER }}"
+          
+  PRODUCTION:
+    name: Deploy in PROD
+    runs-on: ubuntu-latest
+    environment: PROD
+    steps:
+      - uses: actions/checkout@v3
+      - name: Run a script
+        run: |
+          echo "${{ secrets.FTP_SERVER }}"          
