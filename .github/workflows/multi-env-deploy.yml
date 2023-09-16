@@ -11,24 +11,26 @@ jobs:
       - uses: actions/checkout@v3
       - name: Run a script
         run: |
-          echo "${{ secrets.FTP_SERVER }}"
+          echo "${{ vars.ENV_NAME }}"
 
   QUALITYANALYSIS:
     name: Deploy in QA
     runs-on: ubuntu-latest
     environment: QA
+    needs: DEVELOPMENT
     steps:
       - uses: actions/checkout@v3
       - name: Run a script
         run: |
-          echo "${{ secrets.FTP_SERVER }}"
+          echo "${{ vars.ENV_NAME }}"
           
   PRODUCTION:
     name: Deploy in PROD
     runs-on: ubuntu-latest
-    environment: PROD
+    environment: PROD    
+    needs: QUALITYANALYSIS
     steps:
       - uses: actions/checkout@v3
       - name: Run a script
         run: |
-          echo "${{ secrets.FTP_SERVER }}"          
+          echo "${{ vars.ENV_NAME }}"          
