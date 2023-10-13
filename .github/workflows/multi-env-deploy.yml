@@ -1,0 +1,59 @@
+name: "Deploy application in multi env"
+on:
+  push:
+    branches: [ "master", "develop" ]
+  pull_request:
+    branches: [ "master" ]
+  workflow_dispatch: # to manually run this workflow  
+jobs:
+  DEVELOPMENT:
+    name: Deploy in DEV
+    runs-on: ubuntu-latest
+    environment: DEV
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+      - name: Set up Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          channel: ${{ env.FLUTTER_CHANNEL }}
+          # flutter-version: ${{ env.FLUTTER_VERSION }} # you can also specify exact version of flutter
+      
+      - name: Flutter doctor
+        run: flutter doctor # this is an optional step and can be removed
+      
+      - name: Build web
+        run: flutter build web --release
+    
+      - name: 📂 Sync files and Release
+        uses: SamKirkland/FTP-Deploy-Action@v4.3.4
+        with:
+          server: ${{ secrets.FTP_SERVER }}
+          username: ${{ secrets.FTP_USERNAME }}
+          password: ${{ secrets.FTP_PASSWORD }}
+          local-dir: ./build/web/
+          exclude: |
+            **/.git*
+            **/.git*/**
+
+  QUALITYANALYSIS:
+    name: Deploy in QA
+    runs-on: ubuntu-latest
+    environment: QA
+    needs: DEVELOPMENT
+    steps:
+      - uses: actions/checkout@v3
+      - name: Run a script
+        run: |
+          echo "${{ vars.ENV_NAME }}"
+          
+  PRODUCTION:
+    name: Deploy in PROD
+    runs-on: ubuntu-latest
+    environment: PROD    
+    needs: QUALITYANALYSIS
+    steps:
+      - uses: actions/checkout@v3
+      - name: Run a script
+        run: |
+          echo "${{ vars.ENV_NAME }}"          
