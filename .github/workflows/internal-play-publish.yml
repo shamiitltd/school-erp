@@ -1,0 +1,75 @@
+name: Build and Release internal publish
+on:
+  push:
+    branches:
+      - internal
+  workflow_dispatch: # to manually run this workflow
+env:
+  FLUTTER_CHANNEL: 'stable' # 'stable', 'beta', or 'master', default to: 'stable'
+  FLUTTER_VERSION: '3.7.7'
+  PATH_TO_AAB: 'build/app/outputs/bundle/release/app-release.aab'
+  ANDROID_PACKAGE_NAME: 'com.shamiit.school_erp'
+  KEYSTORE_JKS_CODE: ${{secrets.KEYSTORE_JKS_CODE}}
+
+jobs:
+  android:
+    name: Android CI/CD internal
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+    - uses: actions/checkout@v3
+    - uses: actions/setup-java@v3
+      with:
+        distribution: 'temurin' # See 'Supported distributions' for available options
+        java-version: '17'
+          
+    - uses: subosito/flutter-action@v2
+      with:
+        flutter-version: '3.7.7'
+    - run: flutter pub get
+    
+    - name: Generate keystore.jks
+      run: |
+        echo "$KEYSTORE_JKS_CODE" | base64 -d > android/app/key.jks
+
+    - name: Generate key.properties
+      run: |
+        echo "storePassword=$STORE_PASSWORD" > android/key.properties
+        echo "keyPassword=$KEY_PASSWORD" >> android/key.properties
+        echo "keyAlias=$KEY_ALIAS" >> android/key.properties
+        echo "storeFile=../app/key.jks" >> android/key.properties
+      env:
+        STORE_PASSWORD: ${{ secrets.STORE_PASSWORD }}
+        KEY_PASSWORD: ${{ secrets.KEY_PASSWORD }}
+        KEY_ALIAS: ${{ secrets.KEY_ALIAS }}
+
+    - name: Build Release APK
+      run: |
+        flutter build apk --release --split-per-abi
+        
+    - name: Build Release AAB
+      run: |
+        flutter build appbundle --release
+    
+    - name: Push to Releases
+      uses: ncipollo/release-action@v1
+      with:
+        artifacts: "build/app/outputs/apk/release/*.apk,build/app/outputs/bundle/release/app-release.aab"
+        tag: v1.0.${{ github.run_number }}
+        token: ${{ secrets.CODE_ACCESS_TOKEN }}    
+
+
+    - name: Decode Android Service Account JSON
+      run: echo "$ANDROID_SERVICE_ACCOUNT_JSON" | base64 -d > key.json
+      env:
+        ANDROID_SERVICE_ACCOUNT_JSON: ${{ secrets.ANDROID_SERVICE_ACCOUNT_JSON }}
+
+    - name: Upload to Play Store
+      run: |
+        # Supply will upload the AAB to the Play Store
+        fastlane supply --aab ${{ env.PATH_TO_AAB }} --json_key key.json --package_name '${{ env.ANDROID_PACKAGE_NAME }}' --track 'internal'
+      
+
+
+
+
