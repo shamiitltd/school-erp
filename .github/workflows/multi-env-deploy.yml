@@ -1,40 +1,189 @@
-name: "Deploy application in multi env"
+name: "Multi ENV Android & Web CI/CD"
+
 on:
   push:
     branches: [ "master", "develop" ]
   pull_request:
-    branches: [ "master" ]
-  workflow_dispatch: # to manually run this workflow  
+    branches: [ "master", "develop" ]
+  workflow_dispatch: # Manually run this workflow
+env:
+  FLUTTER_CHANNEL: 'stable' # 'stable', 'beta', or 'master', default to: 'stable'
+  FLUTTER_VERSION: '3.7.7'
+  PATH_TO_AAB: 'aab-release/app-release.aab'
+  ANDROID_PACKAGE_NAME: 'com.shamiit.school_erp'
+  KEYSTORE_JKS_CODE: ${{secrets.KEYSTORE_JKS_CODE}}
+  
 jobs:
-  DEVELOPMENT:
-    name: Deploy in DEV
+  CLEANING-READY:
+    name: Clean Ready
     runs-on: ubuntu-latest
-    environment: DEV
+    environment: CLEAN
+    if: |
+      github.ref == 'refs/heads/master'
     steps:
-      - name: Checkout repository
+      - name: Cleaning Permission okay
+        run: echo "Cleaning ready"
+  CLEANING:
+    name: Clean ${{ matrix.environment }}
+    runs-on: ubuntu-latest
+    environment: ${{ matrix.environment }}
+    needs: CLEANING-READY
+    strategy:
+      matrix:
+        environment:
+          - TEST
+          - QA
+          - PROD
+    steps:
+      - name: Cleaning ${{ matrix.environment }} ftp server
+        run: |
+          sshpass -p "${{ secrets.SSH_PASSWORD }}" ssh -o StrictHostKeyChecking=no "${{ secrets.SSH_USER }}" << 'EOF'
+            cd "${{ secrets.FTP_SERVER }}"
+            [ "$(basename "$(pwd)")" = "${{ secrets.FTP_SERVER }}" ] && find . -type f -name '.*' -exec rm {} \; && find . -type d -name '.*' -exec rm -rf {} \;
+            [ "$(basename "$(pwd)")" = "${{ secrets.FTP_SERVER }}" ] && rm -rf ./*
+          EOF
+
+
+  BUILD-WEB:
+    name: Build web code
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
         uses: actions/checkout@v3
-      - name: Set up Flutter
-        uses: subosito/flutter-action@v2
+      
+      - uses: actions/setup-java@v3
         with:
-          channel: ${{ env.FLUTTER_CHANNEL }}
-          # flutter-version: ${{ env.FLUTTER_VERSION }} # you can also specify exact version of flutter
-      
-      - name: Flutter doctor
-        run: flutter doctor # this is an optional step and can be removed
-      
+          distribution: 'temurin' # See 'Supported distributions' for available options
+          java-version: '17'
+          
+      - uses: subosito/flutter-action@v2
+        with:
+          flutter-version: '3.13.5'
+      - run: flutter upgrade
+      - run: flutter pub get
+      - run: flutter test
       - name: Build web
         run: flutter build web --release
+
+      - name: Create ZIP Archive
+        run: |
+          cd build/web
+          zip -r web-release.zip .
+          mv web-release.zip ../../
+        working-directory: ${{ github.workspace }}
+
+      - name: Upload ZIP Artifact
+        uses: actions/upload-artifact@v3
+        with:
+          name: web-artifact
+          path: web-release.zip
+
+
+  BUILD-ANDROID:
+    name: Build Android APK
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - uses: actions/setup-java@v3
+        with:
+          distribution: 'temurin' # See 'Supported distributions' for available options
+          java-version: '17'
+          
+      - uses: subosito/flutter-action@v2
+        with:
+          flutter-version: '3.13.5'
+      - run: flutter upgrade
+      - run: flutter pub get
+      - run: flutter test
     
-      - name: 📂 Sync files and Release
+      - name: Generate keystore.jks
+        run: |
+          echo "$KEYSTORE_JKS_CODE" | base64 -d > android/app/key.jks
+  
+      - name: Update the Version for new release
+        run: |
+          sed -i "s/flutter.versionCode=.*/flutter.versionCode=${{ github.run_number }}/" local.properties
+          sed -i "s/flutter.versionName=.*/flutter.versionName=\"1.0.${{ github.run_number }}\"/" local.properties
+  
+      - name: Generate key.properties
+        run: |
+          echo "storePassword=$STORE_PASSWORD" > android/key.properties
+          echo "keyPassword=$KEY_PASSWORD" >> android/key.properties
+          echo "keyAlias=$KEY_ALIAS" >> android/key.properties
+          echo "storeFile=../app/key.jks" >> android/key.properties
+        env:
+          STORE_PASSWORD: ${{ secrets.STORE_PASSWORD }}
+          KEY_PASSWORD: ${{ secrets.KEY_PASSWORD }}
+          KEY_ALIAS: ${{ secrets.KEY_ALIAS }}
+  
+      - name: Build Release APK
+        run: |
+          flutter build apk --release --split-per-abi
+          
+      - name: Build Release AAB
+        run: |
+          flutter build apk --split-per-abi   
+          flutter build appbundle --release   
+      - name: Push to Releases
+        uses: ncipollo/release-action@v1
+        with:
+          artifacts: "build/app/outputs/apk/release/*.apk"
+          tag: v1.0.${{ github.run_number }}
+          token: ${{ secrets.CODE_ACCESS_TOKEN }}  
+
+      - name: Upload ZIP Artifact
+        uses: actions/upload-artifact@v3
+        with:
+          name: aab-artifact
+          path: build/app/outputs/bundle/release/app-release.aab
+          retention-days: 10  
+
+
+  DEVELOPMENT:
+    name: Deploy in TEST
+    runs-on: ubuntu-latest
+    environment: TEST
+    needs: BUILD-WEB
+    steps:
+      - name: Download ZIP Artifact
+        uses: actions/download-artifact@v3
+        with:
+          name: web-artifact
+          path: web-release
+
+      - name: 📂 Sync files
         uses: SamKirkland/FTP-Deploy-Action@v4.3.4
         with:
           server: ${{ secrets.FTP_SERVER }}
           username: ${{ secrets.FTP_USERNAME }}
           password: ${{ secrets.FTP_PASSWORD }}
-          local-dir: ./build/web/
+          local-dir: ./web-release/
           exclude: |
             **/.git*
             **/.git*/**
+
+      - name: SSH into the server and unzip web-release.zip
+        run: |
+          sshpass -p "${{ secrets.SSH_PASSWORD }}" ssh -o StrictHostKeyChecking=no "${{ secrets.SSH_USER }}" << 'EOF'
+            cd "${{ secrets.FTP_SERVER }}"
+            yes | unzip web-release.zip -d web-release
+          EOF
+
+      - name: Copy all files from web-release directory
+        run: |
+          sshpass -p "${{ secrets.SSH_PASSWORD }}" ssh -o StrictHostKeyChecking=no "${{ secrets.SSH_USER }}" << 'EOF'
+            cd "${{ secrets.FTP_SERVER }}"
+            rsync -av web-release/ . #recursively copy files
+          EOF
+          
+      - name: Remove the 'web-release' directory and .zip
+        run: |
+          sshpass -p "${{ secrets.SSH_PASSWORD }}" ssh -o StrictHostKeyChecking=no "${{ secrets.SSH_USER }}" << 'EOF'
+            cd "${{ secrets.FTP_SERVER }}"
+            rm -rf web-release
+            rm -rf .git
+            rm web-release.zip
+          EOF
 
   QUALITYANALYSIS:
     name: Deploy in QA
@@ -42,18 +191,134 @@ jobs:
     environment: QA
     needs: DEVELOPMENT
     steps:
-      - uses: actions/checkout@v3
-      - name: Run a script
+      - name: Download ZIP Artifact
+        uses: actions/download-artifact@v3
+        with:
+          name: web-artifact
+          path: web-release
+
+      - name: 📂 Sync files
+        uses: SamKirkland/FTP-Deploy-Action@v4.3.4
+        with:
+          server: ${{ secrets.FTP_SERVER }}
+          username: ${{ secrets.FTP_USERNAME }}
+          password: ${{ secrets.FTP_PASSWORD }}
+          local-dir: ./web-release/
+          exclude: |
+            **/.git*
+            **/.git*/**
+
+      - name: SSH into the server and unzip web-release.zip
         run: |
-          echo "${{ vars.ENV_NAME }}"
+          sshpass -p "${{ secrets.SSH_PASSWORD }}" ssh -o StrictHostKeyChecking=no "${{ secrets.SSH_USER }}" << 'EOF'
+            cd "${{ secrets.FTP_SERVER }}"
+            yes | unzip web-release.zip -d web-release
+          EOF
+
+      - name: Copy all files from web-release directory
+        run: |
+          sshpass -p "${{ secrets.SSH_PASSWORD }}" ssh -o StrictHostKeyChecking=no "${{ secrets.SSH_USER }}" << 'EOF'
+            cd "${{ secrets.FTP_SERVER }}"
+            rsync -av web-release/ . #recursively copy files
+          EOF
           
+      - name: Remove the 'web-release' directory and .zip
+        run: |
+          sshpass -p "${{ secrets.SSH_PASSWORD }}" ssh -o StrictHostKeyChecking=no "${{ secrets.SSH_USER }}" << 'EOF'
+            cd "${{ secrets.FTP_SERVER }}"
+            rm -rf web-release
+            rm -rf .git
+            rm web-release.zip
+          EOF
+
   PRODUCTION:
     name: Deploy in PROD
     runs-on: ubuntu-latest
     environment: PROD    
     needs: QUALITYANALYSIS
     steps:
-      - uses: actions/checkout@v3
-      - name: Run a script
+      - name: Download ZIP Artifact
+        uses: actions/download-artifact@v3
+        with:
+          name: web-artifact
+          path: web-release
+
+      - name: 📂 Sync files
+        uses: SamKirkland/FTP-Deploy-Action@v4.3.4
+        with:
+          server: ${{ secrets.FTP_SERVER }}
+          username: ${{ secrets.FTP_USERNAME }}
+          password: ${{ secrets.FTP_PASSWORD }}
+          local-dir: ./web-release/
+          exclude: |
+            **/.git*
+            **/.git*/**
+
+      - name: SSH into the server and unzip web-release.zip
         run: |
-          echo "${{ vars.ENV_NAME }}"          
+          sshpass -p "${{ secrets.SSH_PASSWORD }}" ssh -o StrictHostKeyChecking=no "${{ secrets.SSH_USER }}" << 'EOF'
+            cd "${{ secrets.FTP_SERVER }}"
+            yes | unzip web-release.zip -d web-release
+          EOF
+
+      - name: Copy all files from web-release directory
+        run: |
+          sshpass -p "${{ secrets.SSH_PASSWORD }}" ssh -o StrictHostKeyChecking=no "${{ secrets.SSH_USER }}" << 'EOF'
+            cd "${{ secrets.FTP_SERVER }}"
+            rsync -av web-release/ . #recursively copy files
+          EOF
+
+      - name: Remove the 'web-release' directory and .zip
+        run: |
+          sshpass -p "${{ secrets.SSH_PASSWORD }}" ssh -o StrictHostKeyChecking=no "${{ secrets.SSH_USER }}" << 'EOF'
+            cd "${{ secrets.FTP_SERVER }}"
+            rm -rf web-release
+            rm -rf .git
+            rm web-release.zip
+          EOF
+            
+  GPINTERNAL:
+    name: Deploy in Internal Track GPlay
+    runs-on: ubuntu-latest
+    environment: GPINTERNAL
+    needs: BUILD-ANDROID
+    steps:
+      - name: Download ZIP Artifact
+        uses: actions/download-artifact@v3
+        with:
+          name: aab-artifact
+          path: aab-release
+  
+      - name: Decode Android Service Account JSON
+        run: echo "$ANDROID_SERVICE_ACCOUNT_JSON" | base64 -d > key.json
+        env:
+          ANDROID_SERVICE_ACCOUNT_JSON: ${{ secrets.ANDROID_SERVICE_ACCOUNT_JSON }}
+  
+      - name: Upload to Play Store
+        run: |
+          # Supply will upload the AAB to the Play Store
+          fastlane supply --aab ${{ env.PATH_TO_AAB }} --json_key key.json --package_name '${{ env.ANDROID_PACKAGE_NAME }}' --track 'internal'
+      
+
+  GPPRODUCTION:
+    name: Deploy in Production Track GPlay
+    runs-on: ubuntu-latest
+    environment: GPPRODUCTION
+    needs: BUILD-ANDROID
+    steps:
+      - name: Download ZIP Artifact
+        uses: actions/download-artifact@v3
+        with:
+          name: aab-artifact
+          path: aab-release
+  
+      - name: Decode Android Service Account JSON
+        run: echo "$ANDROID_SERVICE_ACCOUNT_JSON" | base64 -d > key.json
+        env:
+          ANDROID_SERVICE_ACCOUNT_JSON: ${{ secrets.ANDROID_SERVICE_ACCOUNT_JSON }}
+  
+      - name: Upload to Play Store
+        run: |
+          # Supply will upload the AAB to the Play Store
+          fastlane supply --aab ${{ env.PATH_TO_AAB }} --json_key key.json --package_name '${{ env.ANDROID_PACKAGE_NAME }}' --track 'production'
+      
