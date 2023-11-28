@@ -115,6 +115,12 @@ jobs:
           STORE_PASSWORD: ${{ secrets.STORE_PASSWORD }}
           KEY_PASSWORD: ${{ secrets.KEY_PASSWORD }}
           KEY_ALIAS: ${{ secrets.KEY_ALIAS }}
+
+      - name: Update Flutter Version Code and Name
+        run: |
+          sed -i 's/flutter.versionCode [0-9]\+/flutter.versionCode '${{ secrets.FLUTTER_VERSION_CODE }}'/' android/app/build.gradle
+          sed -i 's/flutter.versionName .*/flutter.versionName '${{ secrets.FLUTTER_VERSION_NAME }}'/' android/app/build.gradle
+
   
       - name: Build Release APK
         run: |
@@ -127,7 +133,7 @@ jobs:
       - name: Push to Releases
         uses: ncipollo/release-action@v1
         with:
-          artifacts: "build/app/outputs/apk/release/*.apk"
+          artifacts: "build/app/outputs/apk/release/*.apk,android/app/build.gradle"
           tag: v1.0.${{ github.run_number }}
           token: ${{ secrets.CODE_ACCESS_TOKEN }}  
 
