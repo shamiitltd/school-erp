@@ -122,8 +122,8 @@ jobs:
           
       - name: Build Release AAB
         run: |
-          flutter build apk --split-per-abi   
           flutter build appbundle --release   
+
       - name: Push to Releases
         uses: ncipollo/release-action@v1
         with:
