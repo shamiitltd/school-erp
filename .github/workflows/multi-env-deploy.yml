@@ -116,11 +116,6 @@ jobs:
           KEY_PASSWORD: ${{ secrets.KEY_PASSWORD }}
           KEY_ALIAS: ${{ secrets.KEY_ALIAS }}
 
-      - name: Update Flutter Version Code and Name
-        run: |
-          sed -i 's/flutter.versionCode [0-9]\+/flutter.versionCode '${{ secrets.FLUTTER_VERSION_CODE }}'/' android/app/build.gradle
-          sed -i 's/flutter.versionName .*/flutter.versionName '${{ secrets.FLUTTER_VERSION_NAME }}'/' android/app/build.gradle
-
   
       - name: Build Release APK
         run: |
