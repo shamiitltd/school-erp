@@ -151,14 +151,17 @@ jobs:
         with:
           name: web-artifact
           path: web-release
-
+          
       - name: 📂 Sync files
         uses: SamKirkland/FTP-Deploy-Action@v4.3.4
         with:
-          local-dir: ./web-release/
           server: ${{ secrets.FTP_SERVER }}
           username: ${{ secrets.FTP_USERNAME }}
           password: ${{ secrets.FTP_PASSWORD }}
+          local-dir: ./web-release/
+          exclude: |
+            **/.git*
+            **/.git*/**
 
       - name: SSH into the server and unzip web-release.zip
         run: |
