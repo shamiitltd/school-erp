@@ -102,8 +102,8 @@ jobs:
   
       - name: Update the Version for new release
         run: |
-          sed -i "s/flutter.versionCode=.*/flutter.versionCode=\'${{ github.run_number }}\'/" local.properties
-          sed -i "s/flutter.versionName=.*/flutter.versionName=\'1.0.${{ github.run_number }}\'/" local.properties
+          echo "flutter.versionCode='${{ github.run_number }}'" > android/local.properties
+          echo "flutter.versionName='1.0.${{ github.run_number }}'" >> android/local.properties
   
       - name: Generate key.properties
         run: |
