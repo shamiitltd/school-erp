@@ -5,20 +5,20 @@
     "requestLimit": 1000
   },
   "erpChat": {
-    "afterLogin": "https://sms.iitjeemathsking.com/chat/open",
-    "loginApi": "https://sms.iitjeemathsking.com/api/login"
+    "afterLogin": "https://test.edu.shamiit.org/chat/open",
+    "loginApi": "https://test.edu.shamiit.org/api/login"
   },
   "erpDashboard": {
-    "afterLogin": "https://sms.iitjeemathsking.com/after-login",
-    "loginApi": "https://sms.iitjeemathsking.com/api/login"
+    "afterLogin": "https://test.edu.shamiit.org/after-login",
+    "loginApi": "https://test.edu.shamiit.org/api/login"
   },
   "erpInfo": {
-    "afterLogin": "https://sms.iitjeemathsking.com/after-login",
-    "loginApi": "https://sms.iitjeemathsking.com/api/login"
+    "afterLogin": "https://test.edu.shamiit.org/after-login",
+    "loginApi": "https://test.edu.shamiit.org/api/login"
   },
   "erpProfile": {
-    "afterLogin": "https://sms.iitjeemathsking.com/student-profile",
-    "loginApi": "https://sms.iitjeemathsking.com/api/login"
+    "afterLogin": "https://test.edu.shamiit.org/student-profile",
+    "loginApi": "https://test.edu.shamiit.org/api/login"
   },
   "posts": {
     "a": "Student",
