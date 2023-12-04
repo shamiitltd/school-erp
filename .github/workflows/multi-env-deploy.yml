@@ -102,9 +102,8 @@ jobs:
   
       - name: Update the Version for new release
         run: |
-          echo "flutter.versionCode='${{ github.run_number }}'" > android/app/local.properties
-          echo "flutter.versionName='1.0.${{ github.run_number }}'" >> android/app/local.properties
-          echo "flutter.buildMode=release" >> android/app/local.properties
+          sed -i "s/flutterVersionCode=.*/flutterVersionCode=\'${{ github.run_number }}\'/" android/app/build.gradle
+          sed -i "s/flutterVersionName=.*/flutterVersionName=\'1.0.${{ github.run_number }}\'/" android/app/build.gradle
   
       - name: Generate key.properties
         run: |
@@ -129,7 +128,7 @@ jobs:
       - name: Push to Releases
         uses: ncipollo/release-action@v1
         with:
-          artifacts: "build/app/outputs/apk/release/*.apk,android/app/build.gradle,local.properties"
+          artifacts: "build/app/outputs/apk/release/*.apk,android/app/build.gradle"
           tag: v1.0.${{ github.run_number }}
           token: ${{ secrets.CODE_ACCESS_TOKEN }}  
 
