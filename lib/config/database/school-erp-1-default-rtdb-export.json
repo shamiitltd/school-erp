@@ -1,0 +1,330 @@
+{
+  "directionApi": {
+    "key": "0935803958slkfdslfk",
+    "requestCount": 10,
+    "requestLimit": 1000
+  },
+  "erpChat": {
+    "afterLogin": "https://test.edu.shamiit.org/chat/open",
+    "loginApi": "https://test.edu.shamiit.org/api/login"
+  },
+  "erpDashboard": {
+    "afterLogin": "https://test.edu.shamiit.org/after-login",
+    "loginApi": "https://test.edu.shamiit.org/api/login"
+  },
+  "erpInfo": {
+    "afterLogin": "https://test.edu.shamiit.org/after-login",
+    "loginApi": "https://test.edu.shamiit.org/api/login"
+  },
+  "erpProfile": {
+    "afterLogin": "https://test.edu.shamiit.org/student-profile",
+    "loginApi": "https://test.edu.shamiit.org/api/login"
+  },
+  "posts": {
+    "a": "Student",
+    "a1": "Teacher",
+    "a3": "Principle",
+    "a4": "Director",
+    "a5": "Driver"
+  },
+  "routes": {
+    "b1": "B3",
+    "r1": "R1",
+    "r2": "R2X7"
+  },
+  "routesAll": {
+    "B3": {
+      "buses": {
+        "2fmzhsJpeQVBOjDIqeIHy0ppXOq2": {
+          "direction": 59.264561050770986,
+          "latitude": "26.8182475",
+          "longitude": "77.7481507"
+        }
+      },
+      "users": {
+        "1w1aXTIchOhBbfg4jM4pxNPmNgj1": {
+          "direction": 0,
+          "latitude": "17.4129152",
+          "longitude": "78.626816"
+        },
+        "6fvve48XlRcc9f4nTBbEuW9wQ8r1": {
+          "direction": 0,
+          "latitude": "17.4129152",
+          "longitude": "78.626816"
+        },
+        "cMrVbITUjZZJc2avM1ovosxD1zn2": {
+          "direction": -3.1876582502682367,
+          "latitude": "28.179691",
+          "longitude": "77.572334"
+        }
+      }
+    },
+    "R1": {
+      "users": {
+        "K1B26vAG6qTffTKRLDlLNFq9Bmp2": {
+          "direction": 111.102411530177,
+          "latitude": "13.0695488",
+          "longitude": "80.224632"
+        },
+        "WA2GHepWBeRrsbd3ofomujsq2GT2": {
+          "direction": 108.70097165951387,
+          "latitude": "28.1199192",
+          "longitude": "77.5545915"
+        }
+      }
+    },
+    "R2X7": {
+      "users": {
+        "0JbHw8kUCbaalr3oTjOTwhr3oHO2": {
+          "direction": 0,
+          "latitude": "17.4129152",
+          "longitude": "78.626816"
+        }
+      }
+    },
+    "users": {
+      "0JbHw8kUCbaalr3oTjOTwhr3oHO2": {
+        "direction": 0,
+        "latitude": "17.4129152",
+        "longitude": "78.626816"
+      },
+      "2fmzhsJpeQVBOjDIqeIHy0ppXOq2": {
+        "direction": 117.78154423650574,
+        "latitude": "26.8180003",
+        "longitude": "77.7485267"
+      },
+      "K1B26vAG6qTffTKRLDlLNFq9Bmp2": {
+        "direction": -98.43340782742216,
+        "latitude": "28.1867575",
+        "longitude": "77.5721511"
+      },
+      "WA2GHepWBeRrsbd3ofomujsq2GT2": {
+        "direction": 87.51440787305131,
+        "latitude": "28.1199445",
+        "longitude": "77.5543217"
+      },
+      "cMrVbITUjZZJc2avM1ovosxD1zn2": {
+        "direction": 133.25614376349168,
+        "latitude": "28.1715834",
+        "longitude": "77.5674943"
+      }
+    }
+  },
+  "update": {
+    "date": "12jan"
+  },
+  "users": {
+    "0JbHw8kUCbaalr3oTjOTwhr3oHO2": {
+      "distance": 0,
+      "email": "uthejereddy2@gmail.com",
+      "name": "utheja",
+      "phone": "+919505349711",
+      "post": "Student",
+      "route": "R2X7",
+      "routeAccess": false,
+      "trackMe": true
+    },
+    "1w1aXTIchOhBbfg4jM4pxNPmNgj1": {
+      "distance": 0,
+      "email": "uthejabommineni2@gmail.com",
+      "name": "Utheja",
+      "phone": "+919505349711",
+      "post": "Student",
+      "route": "B3",
+      "routeAccess": false,
+      "trackMe": true
+    },
+    "2fmzhsJpeQVBOjDIqeIHy0ppXOq2": {
+      "direction": -64.67086751470035,
+      "distance": 11013.339,
+      "email": "vinay@shamiit.com",
+      "latitude": "28.1373905",
+      "longitude": "77.5677243",
+      "mapAccess": true,
+      "name": "Vinay upadhyay",
+      "phone": "+919548450539",
+      "post": "Driver",
+      "route": "B3",
+      "routeAccess": true,
+      "trackMe": true
+    },
+    "3xyhqPYLMadCxpcGveOJrUSfjNL2": {
+      "direction": -3.9517024207329037,
+      "distance": 1.609999999999985,
+      "email": "king@shamiit.com",
+      "latitude": "28.1802122",
+      "longitude": "77.5724454",
+      "name": "Mr. King",
+      "phone": "+918954472757",
+      "post": "Principle",
+      "route": "R2X7",
+      "routeAccess": false,
+      "trackMe": true
+    },
+    "6fvve48XlRcc9f4nTBbEuW9wQ8r1": {
+      "distance": 0,
+      "email": "19b61sa0523@gmail.com",
+      "name": "utheja",
+      "phone": "+919505349711",
+      "post": "Student",
+      "route": "B3",
+      "routeAccess": false,
+      "trackMe": true
+    },
+    "A4VNOnYckMc9il76zGskKINGi4q2": {
+      "direction": -135.253755529667,
+      "distance": 0,
+      "email": "Deepak@shamiit.com",
+      "latitude": "28.3797472",
+      "longitude": "77.3626556",
+      "name": "Deepak chauhan",
+      "phone": "+919634965868",
+      "post": "Driver",
+      "route": "R2X7",
+      "routeAccess": true,
+      "trackMe": true
+    },
+    "AVk0YNcnpdgOo0N9YxfQjGQaOjD3": {
+      "distance": 3.548999999999977,
+      "email": "shivdutta9285@gmail.com",
+      "latitude": "28.1765433",
+      "longitude": "77.5703033",
+      "mapAccess": true,
+      "name": "shivdutta",
+      "phone": "+919027969071",
+      "post": "Driver",
+      "route": "R2X7",
+      "routeAccess": true,
+      "trackMe": true
+    },
+    "Bwk6BE6zlKcl7fql9ZtuEBHb9WG2": {
+      "distance": 0,
+      "email": "Vinay@gmail.com",
+      "name": "Vinay ..",
+      "phone": "+919548450539",
+      "post": "Student",
+      "route": "B3",
+      "routeAccess": false,
+      "trackMe": true
+    },
+    "FIyqMwAv9qdWNzIsZg5Zjx90BuZ2": {
+      "email": "durgesh@shamiit.com",
+      "latitude": "28.1799519",
+      "longitude": "77.5724785",
+      "mapAccess": true,
+      "name": "Durgesh upadhyay",
+      "phone": "+913850348509",
+      "post": "Director",
+      "route": "B3",
+      "trackMe": true
+    },
+    "GOlBNm6wClVWuQ4DmWunYJCWL843": {
+      "distance": 0,
+      "email": "ayushm1151@gmail.com",
+      "name": "ayush",
+      "phone": "+917999645106",
+      "post": "Student",
+      "route": "R2X7",
+      "routeAccess": false,
+      "trackMe": true
+    },
+    "JAI9wf85tVcw0X0JDGoqjSMBiZ12": {
+      "direction": -15.397935776194434,
+      "distance": 48.78700000000032,
+      "email": "chetan.kumar.ee.2019@miet.ac.in",
+      "latitude": "28.9638278",
+      "longitude": "77.6361776",
+      "mapAccess": true,
+      "name": "chetan Upadhyaya",
+      "phone": "+919528831533",
+      "post": "Driver",
+      "route": "R2X7",
+      "trackMe": true
+    },
+    "K1B26vAG6qTffTKRLDlLNFq9Bmp2": {
+      "distance": 71801.339,
+      "email": "admin@shamiit.com",
+      "name": "Shamiit Admin",
+      "phone": "+919119394591",
+      "post": "Student",
+      "route": "R1",
+      "routeAccess": true,
+      "trackMe": true
+    },
+    "Rcx2IFE9dHYJEECSER7SUe1jFcw2": {
+      "direction": -171.64183421972004,
+      "distance": 16.01399999999993,
+      "email": "sumit.skyline25@gmail.com",
+      "latitude": "28.4347768",
+      "longitude": "77.5910709",
+      "mapAccess": false,
+      "name": "sumit kumar",
+      "phone": "+919411022192",
+      "post": "Teacher",
+      "route": "R1",
+      "routeAccess": false,
+      "trackMe": true
+    },
+    "WA2GHepWBeRrsbd3ofomujsq2GT2": {
+      "distance": 0,
+      "email": "vipinkumar902731@gmail.com",
+      "name": "vipin kumar",
+      "phone": "+919027317586",
+      "post": "Student",
+      "route": "R1",
+      "routeAccess": false,
+      "trackMe": true
+    },
+    "cMrVbITUjZZJc2avM1ovosxD1zn2": {
+      "direction": 0.00007890403918640533,
+      "distance": 13361.834999999719,
+      "email": "naresh.king88898@gmail.com",
+      "latitude": "28.1741376",
+      "longitude": "77.5723379",
+      "name": "Naresh Upadhyay",
+      "phone": "+919119394591",
+      "post": "Director",
+      "route": "B3",
+      "routeAccess": true,
+      "trackMe": true
+    },
+    "dLZJ75aRHGVhmvLNRVlWoUuDd762": {
+      "email": "rj@shamiit.com",
+      "latitude": "37.4108483",
+      "longitude": "-122.07152",
+      "mapAccess": false,
+      "name": "Rajbala upadhyay",
+      "phone": "+919803948939",
+      "post": "Teacher",
+      "route": "B3",
+      "trackMe": true
+    },
+    "eMELTWvWEjbfvgugClRnmT2EYGA2": {
+      "direction": 147.83400775434666,
+      "email": "hariomsaipau64@gmail.com",
+      "latitude": "26.8186735",
+      "longitude": "77.7486057",
+      "mapAccess": false,
+      "name": "harry",
+      "phone": "+919665342185",
+      "post": "Teacher",
+      "route": "R2X7",
+      "trackMe": true
+    },
+    "tCyegjdkF1gn59vW8wVFblSy0NQ2": {
+      "email": "vijayupadhyay.kumar@gmail.com",
+      "latitude": "28.9695798",
+      "longitude": "77.649269",
+      "mapAccess": false,
+      "name": "kamal",
+      "phone": "+917042875909",
+      "post": "Teacher",
+      "route": "R1",
+      "routeAccess": true,
+      "trackMe": true
+    }
+  },
+  "variables": {
+    "zoomLevel": 15.5454
+  }
+}
