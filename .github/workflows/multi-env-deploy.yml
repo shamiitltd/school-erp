@@ -102,8 +102,9 @@ jobs:
   
       - name: Update the Version for new release
         run: |
-          echo "flutter.versionCode='${{ github.run_number }}'" > android/local.properties
-          echo "flutter.versionName='1.0.${{ github.run_number }}'" >> android/local.properties
+          echo "flutter.versionCode='${{ github.run_number }}'" > android/app/local.properties
+          echo "flutter.versionName='1.0.${{ github.run_number }}'" >> android/app/local.properties
+          echo "flutter.buildMode=release" >> android/app/local.properties
   
       - name: Generate key.properties
         run: |
