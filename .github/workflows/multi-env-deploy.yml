@@ -79,42 +79,8 @@ jobs:
           path: web-release.zip
 
 
-  BUILD-ANDROID-APK:
+  BUILD-ANDROID:
     name: Build Android APK
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v3
-      - uses: actions/setup-java@v3
-        with:
-          distribution: 'temurin' # See 'Supported distributions' for available options
-          java-version: '17'
-          
-      - uses: subosito/flutter-action@v2
-        with:
-          flutter-version: '3.13.5'
-      - run: flutter upgrade
-      - run: flutter pub get
-      - run: flutter test
-
-      - name: Update the Version for new release
-        run: |
-          sed -i "s/flutterVersionCode=.*/flutterVersionCode=\'${{ github.run_number }}\'/" android/app/build.gradle
-          sed -i "s/flutterVersionName=.*/flutterVersionName=\'1.0.${{ github.run_number }}\'/" android/app/build.gradle
-    
-      - name: Build Release APK
-        run: |
-          flutter build apk --release --split-per-abi
-          
-      - name: Push to Releases
-        uses: ncipollo/release-action@v1
-        with:
-          artifacts: "build/app/outputs/apk/release/*.apk"
-          tag: v1.0.${{ github.run_number }}
-          token: ${{ secrets.CODE_ACCESS_TOKEN }}  
-
-
-  BUILD-ANDROID-AAB:
-    name: Build Android AAB
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
@@ -149,10 +115,22 @@ jobs:
           STORE_PASSWORD: ${{ secrets.STORE_PASSWORD }}
           KEY_PASSWORD: ${{ secrets.KEY_PASSWORD }}
           KEY_ALIAS: ${{ secrets.KEY_ALIAS }}
+
+  
+      - name: Build Release APK
+        run: |
+          flutter build apk --release --split-per-abi
           
       - name: Build Release AAB
         run: |
-          flutter build appbundle --release
+          flutter build appbundle --release   
+
+      - name: Push to Releases
+        uses: ncipollo/release-action@v1
+        with:
+          artifacts: "build/app/outputs/apk/release/*.apk"
+          tag: v1.0.${{ github.run_number }}
+          token: ${{ secrets.CODE_ACCESS_TOKEN }}  
 
       - name: Upload ZIP Artifact
         uses: actions/upload-artifact@v3
@@ -304,7 +282,7 @@ jobs:
     name: Deploy in Internal Track GPlay
     runs-on: ubuntu-latest
     environment: GPINTERNAL
-    needs: BUILD-ANDROID-AAB
+    needs: BUILD-ANDROID
     steps:
       - name: Download ZIP Artifact
         uses: actions/download-artifact@v3
@@ -327,7 +305,7 @@ jobs:
     name: Deploy in Production Track GPlay
     runs-on: ubuntu-latest
     environment: GPPRODUCTION
-    needs: BUILD-ANDROID-AAB
+    needs: BUILD-ANDROID
     steps:
       - name: Download ZIP Artifact
         uses: actions/download-artifact@v3
