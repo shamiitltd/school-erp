@@ -52,7 +52,7 @@ class _WebViewExampleState extends State<WebViewExample> {
           afterLoginUrl = value;
         }
       });
-      if(inAppWebViewController != null) {
+      if (inAppWebViewController != null) {
         inAppWebViewController?.loadUrl(
             urlRequest: URLRequest(url: Uri.parse(afterLoginUrl)));
       }
@@ -153,9 +153,17 @@ class _WebViewExampleState extends State<WebViewExample> {
       child: Stack(
         children: [
           if (afterLoginUrl.isEmpty || loginUrl.isEmpty)
-            const Center(
-                child: CircularProgressIndicator(
-              color: Colors.blue,
+            Center(
+                child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              crossAxisAlignment: CrossAxisAlignment.center,
+              children: [
+                Text("Loading data ${firebasePath.replaceFirst(RegExp(r'e'), 'E')}...",),
+                const Padding(padding: EdgeInsets.all(10)),
+                const CircularProgressIndicator(
+                  color: Colors.blue,
+                )
+              ],
             )),
           if (isInternet && afterLoginUrl.isNotEmpty && loginUrl.isNotEmpty)
             InAppWebView(
@@ -172,9 +180,9 @@ class _WebViewExampleState extends State<WebViewExample> {
                 loadingPercentage = 100;
                 if (!isLoggedIn) {
                   isLoggedIn = true;
-                  if(!url.toString().contains('dashboard')) {
+                  if (!url.toString().contains('dashboard')) {
                     inAppWebViewController?.loadUrl(
-                      urlRequest: URLRequest(url: Uri.parse(afterLoginUrl)));
+                        urlRequest: URLRequest(url: Uri.parse(afterLoginUrl)));
                   }
                 }
                 setState(() {});
@@ -185,9 +193,10 @@ class _WebViewExampleState extends State<WebViewExample> {
                   isInternet = false;
                   if (!isLoggedIn) {
                     isLoggedIn = true;
-                    if(!url.toString().contains('dashboard')) {
+                    if (!url.toString().contains('dashboard')) {
                       inAppWebViewController?.loadUrl(
-                        urlRequest: URLRequest(url: Uri.parse(afterLoginUrl)));
+                          urlRequest:
+                              URLRequest(url: Uri.parse(afterLoginUrl)));
                     }
                   }
                   setState(() {});
