@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:school_erp/config/Colors.dart';
 import 'package:school_erp/config/DynamicConstants.dart';
+import 'package:school_erp/domain/Visitors/normalVisitor.dart';
 import 'package:school_erp/domain/erpwebsite/ErpWebView.dart';
 import 'package:school_erp/domain/map/MapHome.dart';
 import 'package:school_erp/domain/map/RecordRoute.dart';
@@ -86,7 +87,9 @@ class _HomePageState extends State<HomePage> {
       container = WebViewExample(firebasePath: firebasePath);
     } else if (currentPage == DrawerSections.logout) {
       FirebaseAuth.instance.signOut();
-    } else {
+    } else if (currentPage == DrawerSections.visitors) {
+      container = ViewVisitors();
+    }else {
       container = const Text('Empty');
     }
     setState(() {});
@@ -164,6 +167,8 @@ class _HomePageState extends State<HomePage> {
           menuItem(6, "Track Bus OSM", Icons.bus_alert_outlined,
               currentPage == DrawerSections.notifications ? true : false),
           Divider(),
+          menuItem(9, "Visitors", Icons.wallet_travel,
+              currentPage == DrawerSections.visitors ? true : false),
           menuItem(7, "Send feedback", Icons.feedback_outlined,
               currentPage == DrawerSections.send_feedback ? true : false),
           Divider(),
@@ -215,6 +220,8 @@ class _HomePageState extends State<HomePage> {
                 currentPage = DrawerSections.send_feedback;
               } else if (id == 8) {
                 currentPage = DrawerSections.logout;
+              } else if (id == 9) {
+                currentPage = DrawerSections.visitors;
               }
             });
           }

@@ -19,6 +19,7 @@ import 'package:school_erp/domain/map/functions/DirectionsRepository.dart';
 import 'package:school_erp/domain/map/functions/RealTimeDb.dart';
 import 'package:school_erp/domain/map/models/Directions.dart';
 import 'package:school_erp/domain/map/widgets/CustomFloatingButton.dart';
+import 'package:school_erp/domain/map/widgets/disclaimerpopup.dart';
 import 'package:school_erp/shared/functions/Computational.dart';
 import 'package:school_erp/shared/functions/popupSnakbar.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -261,7 +262,9 @@ class MapHomePageState extends State<MapHomePage> {
         setState(() {});
       }
     });
-    await location.enableBackgroundMode(enable: isLocationBackground);
+    enableBackgroundLocation(context, location);
+
+    //await location.enableBackgroundMode(enable: isLocationBackground);
   }
 
   Future<LocationData?> updateDistanceTravelled(
@@ -449,6 +452,7 @@ class MapHomePageState extends State<MapHomePage> {
         myRoute = _selectedRoute;
       });
     }
+
 
     return WillPopScope(
       onWillPop: () async {
