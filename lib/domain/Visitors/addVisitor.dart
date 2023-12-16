@@ -46,13 +46,15 @@ class _addVisitor extends State<AddVisitor> {
           ),
           onPressed: () => Navigator.pop(context),
         ),
-        actions:  [
-          IconButton(onPressed: () {
-            Navigator.push(
-              context,
-              MaterialPageRoute(builder: (context) => const ScanVisitor()),
-            );
-          }, icon: const Icon(Icons.qr_code_2_rounded))
+        actions: [
+          IconButton(
+              onPressed: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => const ScanVisitor()),
+                );
+              },
+              icon: const Icon(Icons.qr_code_2_rounded))
         ],
       ),
       body: Form(
@@ -99,6 +101,7 @@ class _addVisitor extends State<AddVisitor> {
                                   .putFile(File(file!.path));
                               imageUrl =
                                   await referenceImageToUpload.getDownloadURL();
+                              setState(() {});
                             } catch (error) {}
                           },
                           child: CircleAvatar(
@@ -110,12 +113,13 @@ class _addVisitor extends State<AddVisitor> {
                                     ? CircleAvatar(
                                         radius: 65,
                                         backgroundImage:
-                                            FileImage(File(imageUrl!)),
+                                            FileImage(File(imageUrl)),
                                       )
                                     : const CircleAvatar(
-                                  radius: 65,
-                                  backgroundImage: AssetImage(AssetsRes.PERSON),
-                                ),
+                                        radius: 65,
+                                        backgroundImage:
+                                            AssetImage(AssetsRes.PERSON),
+                                      ),
                               )),
                         ),
                       ],
